@@ -1,0 +1,46 @@
+{
+  "name": "sprint2_hw4",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/toshkaexe/sprint2_hw4.git",
+  "author": "Anton <anton.zeltser@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/body-parser": "^1.19.5",
+    "@types/date-fns": "^2.6.0",
+    "@types/dotenv": "^8.2.0",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/mongodb": "^4.0.7",
+    "@types/nodemailer": "^6.4.14",
+    "@types/supertest": "^6.0.2",
+    "@types/uuid": "^9.0.8",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jest": "^29.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan-body": "^2.6.9",
+    "nodemailer": "^6.9.9",
+    "supertest": "^6.3.4",
+    "ts-jest": "^29.1.2"
+  },
+  "scripts": {
+    "dev": "yarn nodemon --inspect dist/index.js",
+    "watch": "tsc -w",
+    "jest": "jest --detectOpenHandles --config ./__test__/jest.config.js"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.6",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.17",
+    "nodemon": "^3.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

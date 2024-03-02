@@ -1,0 +1,17 @@
+
+{
+  "version": 2,
+  "name": "sprint2_hw4",
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ]
+}
