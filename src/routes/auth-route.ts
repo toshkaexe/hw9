@@ -68,11 +68,12 @@ authRoute.post('/login',
     validateAuthorization(),
     inputValidation,
     async (req: Request, res: Response): Promise<void> => {
-        const user = await authService.checkCredentials(req.body)
 
+        const tokens = await authService.login(req.body.loginOrEmail, req.body.password,
+            req.ip!, req.headers['user-agent']) //req.header['user-agent'])
 
-        if (user) {
-            const newAccessToken = await jwtService.generateToken(user._id.toString(), '10s');
+       /* if (user) {
+            const newAccessToken = await jwtService.generateToken(user, '10s');
             const newRefreshToken = await jwtService.generateToken(user._id.toString(), '20s');
 
             res.cookie('refreshToken', newRefreshToken, {httpOnly: true, secure: true});
@@ -81,7 +82,7 @@ authRoute.post('/login',
 
         } else {
             res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-        }
+        }*/
     }
 )
 
@@ -105,39 +106,32 @@ authRoute.get('/me',
 authRoute.post('/refresh-token',
     verifyTokenInCookie,
     async (req: Request, res: Response) => {
+        const deviceId = req.user!.deviceId as string
+        const userId = req.user!._id
 
-        console.log("req.cookies");
-        console.log(req.cookies)
-        const refreshToken = req.cookies.refreshToken;
-        const decodedRefreshToken = await jwtService.verifyRefreshToken(refreshToken);
+        const tokens = await authService.refreshTokens(
+            req.cookies['refreshToken'], userId, deviceId);
 
-        console.log("decodedRefreshToken" + decodedRefreshToken);
-        await blacklistTokens.insertOne({accessToken: refreshToken});
-
-        if (decodedRefreshToken) {
-            const newAccessToken = await jwtService.generateToken(decodedRefreshToken, '10s');
-            const newRefreshToken = await jwtService.generateToken(decodedRefreshToken, '20s');
-            res.cookie('refreshToken', newRefreshToken, {httpOnly: true, secure: true});
-
-            res.send({accessToken: newAccessToken});
-
-        } else {
-            res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        if (!tokens) {
+            res.sendStatus(500);
+            return
         }
+
+        const {accessToken, refreshToken} = tokens;
+
+        return res
+            .cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
+            .status(200)
+            .send({accessToken})
     });
 
 authRoute.post('/logout',
     verifyTokenInCookie,
     inputValidation,
     async (req: Request, res: Response) => {
-        const refreshToken = req.cookies.refreshToken;
-        const decodedRefreshToken = await jwtService.verifyRefreshToken(refreshToken);
-
-        if (decodedRefreshToken) {
-
-            await blacklistTokens.insertOne({accessToken: refreshToken})
-            res.sendStatus(204);
-        } else {
-            res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-        }
+        const deviceId = req.user!.deviceId as string
+        const userId = req.user
+        const isLogout = await authService.logout(deviceId, userId);
+        if (!isLogout) return res.sendStatus(401)
+        return res.sendStatus(204)
     });

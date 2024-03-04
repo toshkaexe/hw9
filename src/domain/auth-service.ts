@@ -8,8 +8,14 @@ import {LoginInputModel} from "../models/auth/login-model";
 import {add} from 'date-fns/add'
 import {CreateUserInputModel} from "../models/users/users-models";
 import {randomUUID} from "crypto";
-export const authService = {
+import {jwtService} from "./jwt-service";
+import {DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {SecurityDevicesRepository} from "../repositories/security-devices-repository";
+import {UsersService} from "./users-service";
+import {v4 as uuidv4} from 'uuid';
+import {BryptService} from "./brypt-service";
 
+export const authService = {
 
 
     async resendCode(email: string) {
@@ -24,7 +30,7 @@ export const authService = {
         const emailData = {
             email: email,
             subject: 'email confirmation',
-            message:`
+            message: `
         <h1>Thanks for your registration</h1>
         <p>
             To finish registration, please follow the link below:
@@ -39,8 +45,7 @@ export const authService = {
         try {
             await emailManager.sendEmailRecoveryMessage(emailData)
             return true
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error)
             return false
         }
@@ -70,7 +75,7 @@ export const authService = {
         const emailData = {
             email: inputData.email,
             subject: 'email confirmation',
-            message:`
+            message: `
         <h1>Thanks for your registration</h1>
         <p>
             To finish registration, please follow the link below:
@@ -83,7 +88,7 @@ export const authService = {
         <p>'${user.emailConfirmation.confirmationCode}'</p>
     `
         }
-        const createResult= await UsersRepository.createUser(user)
+        const createResult = await UsersRepository.createUser(user)
         try {
             await emailManager.sendEmailRecoveryMessage(emailData)
             console.log('письмо отправлено')
@@ -119,4 +124,82 @@ export const authService = {
         return result
     },
 
+    async logout(deviceId: string, userId: string) {
+        return await SecurityDevicesRepository.deleteRemoteSession(deviceId, userId);
+    },
+
+
+    async login(loginOrEmail: string, password: string, ip: string, deviceName: string) {
+
+        const user = await UsersRepository.findByLoginOrEmail(loginOrEmail)
+        if (!user) return null
+
+        const deviceId = uuidv4();
+
+        const refreshTokenPayload = {
+            deviceId,
+            userId: user._id.toString()
+        }
+
+        const accessToken = await jwtService.generateToken(user.toString(), '10s')
+        const refreshToken = await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
+
+        const expDate = await jwtService.getExpirationDate(refreshToken);
+        if (!expDate) return null;
+
+        const sessionData = {
+            issuedAt: expDate,
+            userId: user._id.toString(),
+            ip,
+            deviceId,
+            deviceName: deviceName || 'unknown',
+            lastActiveDate: new Date().toISOString() //iat from jwt
+        }
+
+        const sessionSaved = await SecurityDevicesRepository.saveDevicesSession(sessionData);
+        if (!sessionSaved) return null;
+
+        return {accessToken, refreshToken}
+
+    },
+
+    //обновление refreshTokens
+
+    async refreshTokens(oldRefreshToken: string, userId: ObjectId, deviceId: string) {
+
+        const user = await UsersService.findUserById(userId);
+        if (!user) return;
+
+        const accessToken = await jwtService.generateToken(user.id, '10s')
+        const refreshToken = await jwtService.generateRefreshToken(
+            {
+                deviceId,
+                userId: user.id
+            }, '20s')
+
+        const expDate = await jwtService.getExpirationDate(refreshToken)
+        if (!expDate) return;
+
+        const lastActiveDate = new Date().toISOString();
+        const updatedSession = await SecurityDevicesRepository.updateDeviceSession(expDate, lastActiveDate,
+            user.id, deviceId)
+        if (!updatedSession) return;
+
+        return {accessToken, refreshToken}
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

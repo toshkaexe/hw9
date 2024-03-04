@@ -8,3 +8,4 @@ declare global {
         }
     }
 }
+app.set('trust proxy', true);

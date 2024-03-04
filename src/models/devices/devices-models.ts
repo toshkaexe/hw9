@@ -6,3 +6,10 @@ export type DeviceAuthSessionDb = {
     userId: string
     lastActiveDate: string
 }
+
+// храним все случаи обращения к api
+export type DeviceHistoryCollectionDb = {
+    ip: string
+    url: string
+    date: Date
+}
