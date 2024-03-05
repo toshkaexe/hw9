@@ -9,11 +9,13 @@ import {add} from 'date-fns/add'
 import {CreateUserInputModel} from "../models/users/users-models";
 import {randomUUID} from "crypto";
 import {jwtService} from "./jwt-service";
-import {DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {ApiRequestModel, DeviceAuthSessionDb} from "../models/devices/devices-models";
 import {SecurityDevicesRepository} from "../repositories/security-devices-repository";
 import {UsersService} from "./users-service";
 import {v4 as uuidv4} from 'uuid';
 import {BryptService} from "./brypt-service";
+import {apiRequestsCollection} from "../db/db";
+import {RequestApiRepository} from "../repositories/request-api-repository";
 
 export const authService = {
 
@@ -134,7 +136,7 @@ export const authService = {
         const user = await UsersRepository.findByLoginOrEmail(loginOrEmail)
         if (!user) return null
 
-        const deviceId = uuidv4();
+        const deviceId=randomUUID();
 
         const refreshTokenPayload = {
             deviceId,
@@ -186,6 +188,19 @@ export const authService = {
         if (!updatedSession) return;
 
         return {accessToken, refreshToken}
+    },
+
+
+    async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
+
+        const exampleRequest: ApiRequestModel = {
+            ip: data.ip,
+            url: data.url,
+            date: data.date
+        };
+        const savedRequest = await RequestApiRepository.saveCollectionToDB(exampleRequest);
+        if (!savedRequest) return;
+        return savedRequest;
     }
 }
 

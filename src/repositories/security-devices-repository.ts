@@ -1,5 +1,5 @@
-import {DeviceAuthSessionDb} from "../models/devices/devices-models";
-import {deviceCollection} from "../db/db";
+import {DeviceAuthSessionDb, ApiRequestModel} from "../models/devices/devices-models";
+import {apiRequestsCollection, deviceCollection} from "../db/db";
 
 
 export class SecurityDevicesRepository {

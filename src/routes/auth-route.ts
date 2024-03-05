@@ -1,13 +1,9 @@
 import {Router, Request, Response} from 'express';
 import {HTTP_STATUSES} from "../models/common";
-import {blacklistTokens, blogsCollection, database, postsCollection} from "../db/db";
-import {WithId} from "mongodb";
-import {UserDbModel} from "../models/users/users-models";
-import {UsersService} from "../domain/users-service";
-import {jwtService} from "../domain/jwt-service";
+
 import {inputValidation} from "../validators/input-validation";
 import {validateAuthorization} from "../validators/auth-validation";
-import {bearerAuth} from "../middleware/auth-middlewares";
+import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
 import {UsersQueryRepository} from "../repositories/user-query-repository";
 import {
     authConfirmationValidation,
@@ -16,8 +12,9 @@ import {
 } from "../middleware/user-already-exist";
 import {authService} from "../domain/auth-service";
 import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
-import {TokenDbModel} from "../models/auth/auth-models";
-import request from "supertest";
+import {UsersService} from "../domain/users-service";
+import {devicesRoute} from "./device-route";
+import {RequestApiRepository} from "../repositories/request-api-repository";
 
 
 export const authRoute = Router({})
@@ -64,25 +61,62 @@ authRoute.post('/registration-confirmation',
 )
 
 
+//test post ApiRequests
+authRoute.post('/apirequest',
+    // validateAuthorization(),
+    inputValidation,
+    async (req: Request, res: Response): Promise<void> => {
+
+        const apiReq = {
+            ip: req.ip,
+            url: req.baseUrl || req.originalUrl,
+            date: new Date()
+        }
+
+        const apiRequest = await authService.saveApiRequest(apiReq);
+
+        apiRequest ? res.sendStatus(HTTP_STATUSES.OK_200) :
+            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+
+    })
+
+authRoute.delete('/apirequest',
+
+    async (req: Request, res: Response) => {
+        const isDeleted = await RequestApiRepository.deleteAll()
+        isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
+            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+    })
+
+
 authRoute.post('/login',
     validateAuthorization(),
     inputValidation,
     async (req: Request, res: Response): Promise<void> => {
 
-        const tokens = await authService.login(req.body.loginOrEmail, req.body.password,
-            req.ip!, req.headers['user-agent']) //req.header['user-agent'])
+        const apiReq = {
+            ip: req.ip,
+            url: req.baseUrl || req.originalUrl,
+            date: new Date()
+        }
 
-       /* if (user) {
-            const newAccessToken = await jwtService.generateToken(user, '10s');
-            const newRefreshToken = await jwtService.generateToken(user._id.toString(), '20s');
-
-            res.cookie('refreshToken', newRefreshToken, {httpOnly: true, secure: true});
-            res.status(HTTP_STATUSES.OK_200).send({accessToken: newAccessToken})
+//    const apiRequest = await authService.saveApiRequest(apiReq);
 
 
-        } else {
-            res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-        }*/
+        //  const tokens = await authService.login(req.body.loginOrEmail, req.body.password,
+        //    req.ip!, req.headers['user-agent']) //req.header['user-agent'])
+
+        /* if (user) {
+             const newAccessToken = await jwtService.generateToken(user, '10s');
+             const newRefreshToken = await jwtService.generateToken(user._id.toString(), '20s');
+
+             res.cookie('refreshToken', newRefreshToken, {httpOnly: true, secure: true});
+             res.status(HTTP_STATUSES.OK_200).send({accessToken: newAccessToken})
+
+
+         } else {
+             res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+         }*/
     }
 )
 

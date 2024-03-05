@@ -11,6 +11,7 @@ import {emailRoute} from "./routes/emailRoute";
 import {cookie} from "express-validator";
 import cookieParser from "cookie-parser";
 import {devicesRoute} from "./routes/device-route";
+import {apiRequestsCollection} from "./db/db";
 
 
 export const RouterPaths = {
@@ -22,6 +23,7 @@ export const RouterPaths = {
     auth: '/auth',
     email: '/email',
     security: '/security',
+
 }
 
 export const app: Express = express();

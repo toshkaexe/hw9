@@ -1,7 +1,7 @@
 import {Router, Request, Response} from 'express';
 import {HTTP_STATUSES} from "../models/common";
 import {
-    apiRequestHistoryCollection,
+    apiRequestsCollection,
     blacklistTokens,
     blogsCollection,
     commentsCollection,
@@ -19,7 +19,7 @@ testingRoute.delete('/all-data', async (req: Request, res: Response) => {
     await commentsCollection.deleteMany({});
     await blacklistTokens.deleteMany({});
     await deviceCollection.deleteMany({});
-    await apiRequestHistoryCollection.deleteMany({});
+    await apiRequestsCollection.deleteMany({});
     //await database.dropDatabase();
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 

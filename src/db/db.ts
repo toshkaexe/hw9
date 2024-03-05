@@ -6,7 +6,7 @@ import {UserDbModel} from "../models/users/users-models";
 import {CommentDbModel} from "../models/comments/comment-model";
 import {validateUsers} from "../validators/user-validation";
 import {TokenDbModel} from "../models/auth/auth-models";
-import {DeviceAuthSessionDb, DeviceHistoryCollectionDb} from "../models/devices/devices-models";
+import {DeviceAuthSessionDb, ApiRequestModel} from "../models/devices/devices-models";
 
 export const db: DBType = {
     blogs: [],
@@ -31,7 +31,7 @@ export const blacklistTokens = database.collection<TokenDbModel>('tokens');
 
 export const deviceCollection = database.collection<DeviceAuthSessionDb>('devices');
 
-export const apiRequestHistoryCollection = database.collection<DeviceHistoryCollectionDb>('apiRequestHistory');
+export const apiRequestsCollection = database.collection<ApiRequestModel>('apirequests');
 
 
 
