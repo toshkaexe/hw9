@@ -6,34 +6,45 @@ import {UsersQueryRepository} from "../repositories/user-query-repository";
 import {UsersService} from "../domain/users-service";
 import {validateUsers} from "../validators/user-validation";
 import {inputValidation} from "../validators/input-validation";
+import {deviceCollection} from "../db/db";
+import {SessionRepository} from "../repositories/session-repository";
 
 export const devicesRoute = Router({})
 
 devicesRoute.get('/',
     authMiddleware,
     async (req: Request, res: Response) => {
-        const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
-        const searchLoginTerm = req.query.searchLoginTerm ? req.query.searchLoginTerm.toString() : null
-        const searchEmailTerm = req.query.searchEmailTerm ? req.query.searchEmailTerm.toString() : null
+        try {
+            const sessions =
+                await deviceCollection.find().toArray();
+            res.json(sessions)
 
-
-        const foundUsers = await UsersQueryRepository.findUsers(pageNumber, pageSize,
-            sortBy, sortDirection, searchLoginTerm, searchEmailTerm)
-        return res.send(foundUsers)
-    })
+        } catch (error) {
+            res.sendStatus(HTTP_STATUSES.InternalServerError_500);
+        }
+    });
 
 devicesRoute.delete('/:id',
     authMiddleware,
     async (req: Request, res: Response) => {
-        const isDeleted = await UsersService.deleteUser(req.params.id)
+
+    const userId =
+        await  SessionRepository.getUserBySessionID(req.params.id)
+        if (!userId) return null;
+
+   const isDeleted =
+       await SessionRepository.deleteRemoteSession(req.params.id, userId.toString())
+
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
-            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+   return
     })
 
+//delete all sessions
 devicesRoute.delete('/',
     authMiddleware,
     async (req: Request, res: Response) => {
-        const isDeleted = await UsersService.deleteUser(req.params.id)
+        const isDeleted = await SessionRepository.deleteAllRemoteSessions()
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     })

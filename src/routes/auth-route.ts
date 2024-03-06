@@ -7,7 +7,7 @@ import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
 import {UsersQueryRepository} from "../repositories/user-query-repository";
 import {
     authConfirmationValidation,
-    authRegistraionResendingEmail,
+    authRegistrationResendingEmail,
     registrationValidation
 } from "../middleware/user-already-exist";
 import {authService} from "../domain/auth-service";
@@ -33,7 +33,7 @@ authRoute.post('/registration',
 )
 
 authRoute.post('/registration-email-resending',
-    authRegistraionResendingEmail(),
+    authRegistrationResendingEmail(),
     async (req: Request, res: Response) => {
         const user = await authService.resendCode(req.body.email)
         if (!user) {

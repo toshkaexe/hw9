@@ -46,3 +46,5 @@ export const verifyTokenInCookie = async (req: Request,
         return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
 };
+
+//cout documents

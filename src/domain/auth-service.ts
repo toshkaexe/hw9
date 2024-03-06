@@ -1,24 +1,96 @@
 import {UsersRepository} from "../repositories/users-repositiory";
-
-
-import {emailManager} from "../managers/email-manager";
-import bcrypt from "bcrypt";
 import {ObjectId} from "mongodb";
-import {LoginInputModel} from "../models/auth/login-model";
-import {add} from 'date-fns/add'
-import {CreateUserInputModel} from "../models/users/users-models";
 import {randomUUID} from "crypto";
 import {jwtService} from "./jwt-service";
 import {ApiRequestModel, DeviceAuthSessionDb} from "../models/devices/devices-models";
-import {SecurityDevicesRepository} from "../repositories/security-devices-repository";
+import {SessionRepository} from "../repositories/session-repository";
 import {UsersService} from "./users-service";
-import {v4 as uuidv4} from 'uuid';
-import {BryptService} from "./brypt-service";
-import {apiRequestsCollection} from "../db/db";
+
 import {RequestApiRepository} from "../repositories/request-api-repository";
+import {add} from "date-fns/add";
+import {emailManager} from "../managers/email-manager";
+import {CreateUserInputModel} from "../models/users/users-models";
+import bcrypt from "bcrypt";
+import {LoginInputModel} from "../models/auth/auth-models";
 
 export const authService = {
 
+    async logout(deviceId: string, userId: string) {
+        return await SessionRepository.deleteRemoteSession(deviceId, userId);
+    },
+
+
+    async login(loginOrEmail: string, password: string, ip: string, deviceName: string) {
+
+        const user = await UsersRepository.findByLoginOrEmail(loginOrEmail)
+        if (!user) return null
+
+        const deviceId=randomUUID();
+
+        const refreshTokenPayload = {
+            deviceId,
+            userId: user._id.toString()
+        }
+
+        const accessToken = await jwtService.generateToken(user.toString(), '10s')
+        const refreshToken = await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
+
+        const expDate = await jwtService.getExpirationDate(refreshToken);
+        if (!expDate) return null;
+
+        const sessionData = {
+            issuedAt: expDate,
+            userId: user._id.toString(),
+            ip,
+            deviceId,
+            deviceName: deviceName || 'unknown',
+            lastActiveDate: new Date().toISOString() //iat from jwt
+        }
+
+        const sessionSaved = await SessionRepository.saveSession(sessionData);
+        if (!sessionSaved) return null;
+
+        return {accessToken, refreshToken}
+
+    },
+
+    //обновление refreshTokens
+
+    async refreshTokens(oldRefreshToken: string, userId: ObjectId, deviceId: string) {
+
+        const user = await UsersService.findUserById(userId);
+        if (!user) return;
+
+        const accessToken = await jwtService.generateToken(user.id, '10s')
+        const refreshToken = await jwtService.generateRefreshToken(
+            {
+                deviceId,
+                userId: user.id
+            }, '20s')
+
+        const expDate = await jwtService.getExpirationDate(refreshToken)
+        if (!expDate) return;
+
+        const lastActiveDate = new Date().toISOString();
+        const updatedSession = await SessionRepository.updateDeviceSession(expDate, lastActiveDate,
+            user.id, deviceId)
+        if (!updatedSession) return;
+
+        return {accessToken, refreshToken}
+    },
+
+
+    async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
+
+        const exampleRequest: ApiRequestModel = {
+            ip: data.ip,
+            url: data.url,
+            date: data.date
+        };
+        const savedRequest = await RequestApiRepository.saveCollectionToDB(exampleRequest);
+        if (!savedRequest) return;
+        return savedRequest;
+    },
 
     async resendCode(email: string) {
         const user = await UsersRepository.findByLoginOrEmail(email)
@@ -126,82 +198,6 @@ export const authService = {
         return result
     },
 
-    async logout(deviceId: string, userId: string) {
-        return await SecurityDevicesRepository.deleteRemoteSession(deviceId, userId);
-    },
-
-
-    async login(loginOrEmail: string, password: string, ip: string, deviceName: string) {
-
-        const user = await UsersRepository.findByLoginOrEmail(loginOrEmail)
-        if (!user) return null
-
-        const deviceId=randomUUID();
-
-        const refreshTokenPayload = {
-            deviceId,
-            userId: user._id.toString()
-        }
-
-        const accessToken = await jwtService.generateToken(user.toString(), '10s')
-        const refreshToken = await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
-
-        const expDate = await jwtService.getExpirationDate(refreshToken);
-        if (!expDate) return null;
-
-        const sessionData = {
-            issuedAt: expDate,
-            userId: user._id.toString(),
-            ip,
-            deviceId,
-            deviceName: deviceName || 'unknown',
-            lastActiveDate: new Date().toISOString() //iat from jwt
-        }
-
-        const sessionSaved = await SecurityDevicesRepository.saveDevicesSession(sessionData);
-        if (!sessionSaved) return null;
-
-        return {accessToken, refreshToken}
-
-    },
-
-    //обновление refreshTokens
-
-    async refreshTokens(oldRefreshToken: string, userId: ObjectId, deviceId: string) {
-
-        const user = await UsersService.findUserById(userId);
-        if (!user) return;
-
-        const accessToken = await jwtService.generateToken(user.id, '10s')
-        const refreshToken = await jwtService.generateRefreshToken(
-            {
-                deviceId,
-                userId: user.id
-            }, '20s')
-
-        const expDate = await jwtService.getExpirationDate(refreshToken)
-        if (!expDate) return;
-
-        const lastActiveDate = new Date().toISOString();
-        const updatedSession = await SecurityDevicesRepository.updateDeviceSession(expDate, lastActiveDate,
-            user.id, deviceId)
-        if (!updatedSession) return;
-
-        return {accessToken, refreshToken}
-    },
-
-
-    async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
-
-        const exampleRequest: ApiRequestModel = {
-            ip: data.ip,
-            url: data.url,
-            date: data.date
-        };
-        const savedRequest = await RequestApiRepository.saveCollectionToDB(exampleRequest);
-        if (!savedRequest) return;
-        return savedRequest;
-    }
 }
 
 

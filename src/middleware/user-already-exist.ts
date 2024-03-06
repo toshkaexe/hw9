@@ -83,7 +83,7 @@ export const emailExistValidation = body('email')
 });
 
 
-export const authRegistraionResendingEmail = ()=>[
+export const authRegistrationResendingEmail = ()=>[
     emailValidation,
     emailExistValidation,
     inputValidation

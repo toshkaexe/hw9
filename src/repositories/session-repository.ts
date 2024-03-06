@@ -2,9 +2,9 @@ import {DeviceAuthSessionDb, ApiRequestModel} from "../models/devices/devices-mo
 import {apiRequestsCollection, deviceCollection} from "../db/db";
 
 
-export class SecurityDevicesRepository {
+export class SessionRepository {
 
-    static async saveDevicesSession(sessionData: DeviceAuthSessionDb) {
+    static async saveSession(sessionData: DeviceAuthSessionDb) {
         try {
             const res = await deviceCollection.insertOne(sessionData)
             return res.insertedId.toString()
@@ -34,22 +34,42 @@ export class SecurityDevicesRepository {
             return false;
         }
     }
-    static async deleteRemoteSession(deviceId: string, userId: string){
+
+    static async deleteRemoteSession(deviceId: string, userId: string) {
 
         try {
             const res = await deviceCollection.deleteMany
             (
                 {
                     $and: [
-                        {"userId": userId},
+                        {"userId": userId}
+                        ,
                         {"deviceId": deviceId}
                     ]
                 }
             )
-        return true;
+            return true;
         } catch (e) {
             return false;
         }
+    }
+
+    static async deleteAllRemoteSessions() {
+        try {
+            const res = await deviceCollection.deleteMany({});
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    static async getUserBySessionID(sessionID: string) {
+
+        const user = await deviceCollection.findOne({deviceId: sessionID});
+        if (!user) return null;
+
+        return user;
+
     }
 
 }

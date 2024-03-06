@@ -17,7 +17,8 @@ usersRouter.get('/',
         const searchEmailTerm = req.query.searchEmailTerm ? req.query.searchEmailTerm.toString() : null
 
 
-        const foundUsers = await UsersQueryRepository.findUsers(pageNumber, pageSize,
+        const foundUsers =
+            await UsersQueryRepository.findUsers(pageNumber, pageSize,
             sortBy, sortDirection, searchLoginTerm, searchEmailTerm)
         return res.send(foundUsers)
     })
