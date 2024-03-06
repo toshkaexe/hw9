@@ -11,10 +11,8 @@ import {
     registrationValidation
 } from "../middleware/user-already-exist";
 import {authService} from "../domain/auth-service";
-import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
-import {UsersService} from "../domain/users-service";
-import {devicesRoute} from "./device-route";
-import {RequestApiRepository} from "../repositories/request-api-repository";
+import {logoutMiddleware, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
+import {restrictionValidator} from "../middleware/restrict-number-queries-middleware";
 
 
 export const authRoute = Router({})
@@ -61,7 +59,7 @@ authRoute.post('/registration-confirmation',
 )
 
 
-//test post ApiRequests
+/*//test post ApiRequests
 authRoute.post('/apirequest',
     // validateAuthorization(),
     inputValidation,
@@ -78,50 +76,57 @@ authRoute.post('/apirequest',
         apiRequest ? res.sendStatus(HTTP_STATUSES.OK_200) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
-    })
-
-authRoute.delete('/apirequest',
-
-    async (req: Request, res: Response) => {
-        const isDeleted = await RequestApiRepository.deleteAll()
-        isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
-            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-    })
-
+    })*/
+async function sendApiRequest(req: Request, res: Response) {
+    const apiReq = {
+        ip: req.ip,
+        url: req.baseUrl || req.originalUrl,
+        date: new Date()
+    }
+    await authService.saveApiRequest(apiReq);
+}
 
 authRoute.post('/login',
+    restrictionValidator(),
     validateAuthorization(),
     inputValidation,
     async (req: Request, res: Response): Promise<void> => {
+        console.log("eeeeeeeeee")
+        await sendApiRequest(req, res);
+        try {
+            const authData = {
+                loginOrEmail: req.body.loginOrEmail,
+                password: req.body.password
+            }
+            console.log("loginOrEmail"+authData.loginOrEmail + " "  +authData.password)
+            const response =
+                await authService.checkCredentials(authData)
 
-        const apiReq = {
-            ip: req.ip,
-            url: req.baseUrl || req.originalUrl,
-            date: new Date()
+            if (!response) {
+                res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+                return
+            }
+
+            const token = await authService
+                .login(
+                    req.body.loginOrEmail,
+                    req.body.password,
+                    req.ip!,
+                    req.headers['user-agent'] ?? 'string')
+
+
+            console.log(req.ip, 'req.ip');
+            res.cookie('refreshToken', token?.refreshToken, {httpOnly: true, secure: true})
+            res.send({accessToken: token?.accessToken})
+            res.status(200)
+        } catch (error) {
+            res.sendStatus(HTTP_STATUSES.InternalServerError_500)
         }
-
-//    const apiRequest = await authService.saveApiRequest(apiReq);
-
-
-        //  const tokens = await authService.login(req.body.loginOrEmail, req.body.password,
-        //    req.ip!, req.headers['user-agent']) //req.header['user-agent'])
-
-        /* if (user) {
-             const newAccessToken = await jwtService.generateToken(user, '10s');
-             const newRefreshToken = await jwtService.generateToken(user._id.toString(), '20s');
-
-             res.cookie('refreshToken', newRefreshToken, {httpOnly: true, secure: true});
-             res.status(HTTP_STATUSES.OK_200).send({accessToken: newAccessToken})
-
-
-         } else {
-             res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-         }*/
     }
 )
 
 authRoute.get('/me',
-    bearerAuth,
+ //   bearerAuth,
     async (req: Request, res: Response) => {
         const userId = req.user!.id
         const currentUser = await UsersQueryRepository.findCurrentUser(userId)
@@ -159,9 +164,15 @@ authRoute.post('/refresh-token',
             .send({accessToken})
     });
 
+
+//restrictionValidator(),
+   // validateAuthorization(),
+ //   inputValidation,
+
 authRoute.post('/logout',
-    verifyTokenInCookie,
-    inputValidation,
+    logoutMiddleware(),
+    //verifyTokenInCookie,
+  //  inputValidation,
     async (req: Request, res: Response) => {
         const deviceId = req.user!.deviceId as string
         const userId = req.user

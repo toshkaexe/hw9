@@ -4,7 +4,7 @@ import {apiRequestsCollection, deviceCollection} from "../db/db";
 
 export class SessionRepository {
 
-    static async saveSession(sessionData: DeviceAuthSessionDb) {
+    static async creatDeviceSession(sessionData: DeviceAuthSessionDb) {
         try {
             const res = await deviceCollection.insertOne(sessionData)
             return res.insertedId.toString()

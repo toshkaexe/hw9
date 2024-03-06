@@ -19,21 +19,28 @@ export const authService = {
         return await SessionRepository.deleteRemoteSession(deviceId, userId);
     },
 
+    async login(loginOrEmail: string,
+                password: string,
+                ip: string,
+                deviceName: string) {
 
-    async login(loginOrEmail: string, password: string, ip: string, deviceName: string) {
-
-        const user = await UsersRepository.findByLoginOrEmail(loginOrEmail)
+        const user =
+            await UsersRepository.findByLoginOrEmail(loginOrEmail)
         if (!user) return null
 
         const deviceId=randomUUID();
 
+        //Новый рефреш токен deviceId+userId
         const refreshTokenPayload = {
             deviceId,
             userId: user._id.toString()
         }
 
-        const accessToken = await jwtService.generateToken(user.toString(), '10s')
-        const refreshToken = await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
+        // acessToken = публичный и нет привязки к девейсу
+        const accessToken =
+            await jwtService.generateToken(user._id.toString(), '10s')
+        const refreshToken =
+            await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
 
         const expDate = await jwtService.getExpirationDate(refreshToken);
         if (!expDate) return null;
@@ -47,15 +54,14 @@ export const authService = {
             lastActiveDate: new Date().toISOString() //iat from jwt
         }
 
-        const sessionSaved = await SessionRepository.saveSession(sessionData);
+        const sessionSaved =
+            await SessionRepository.creatDeviceSession(sessionData);
         if (!sessionSaved) return null;
 
         return {accessToken, refreshToken}
-
     },
 
     //обновление refreshTokens
-
     async refreshTokens(oldRefreshToken: string, userId: ObjectId, deviceId: string) {
 
         const user = await UsersService.findUserById(userId);

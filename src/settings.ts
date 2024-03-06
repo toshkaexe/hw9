@@ -22,7 +22,7 @@ export const RouterPaths = {
     comments: '/comments',
     auth: '/auth',
     email: '/email',
-    security: '/security',
+    security: '/security/devices',
 
 }
 
@@ -33,7 +33,7 @@ app.use(express.json())
 
 app.use(bodyParser.json())
 app.get('/', (req, res) => {
-    res.send("HEllO Sprint 2 HW 4")
+    res.send("Homework 9")
 })
 app.get('/env', (req, res) => {
     res.send({

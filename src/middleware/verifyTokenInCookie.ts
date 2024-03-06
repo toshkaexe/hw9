@@ -7,44 +7,37 @@ import {jwtService} from "../domain/jwt-service";
 import {UserViewModel} from "../models/users/users-models";
 import {blacklistTokens} from "../db/db";
 import request from "supertest";
+import {inputValidation} from "../validators/input-validation";
+import {emailExistValidation, emailValidation} from "./user-already-exist";
 
 
-
-// @ts-ignore
 export const verifyTokenInCookie = async (req: Request,
-                                   res: Response,
-                                   next: NextFunction) => {
+                                          res: Response,
+                                          next: NextFunction) => {
 
     console.log(req.cookies.refreshToken);
     const refreshToken = req.cookies?.refreshToken;
 
+    const userId = await jwtService.getUserIdByToken(refreshToken)
+    console.log("....")
+    console.log("userId:" + userId)
+    console.log("---------> userId:" + userId)
     if (!refreshToken) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
-
     try {
-        console.log("works")
-
-        const decodedToken = await jwtService.verifyRefreshToken(refreshToken);
-        console.log("de"+decodedToken);
-
-        console.log("refreshT"+refreshToken);
-        const tokenExists = await blacklistTokens.findOne({ accessToken: refreshToken });
-        console.log("********, tokenExists")
-        console.log(tokenExists)
-
-            if (tokenExists) {
-                console.log("+++++++")
+        const tokenExists = await blacklistTokens.findOne({accessToken: refreshToken});
+        if (tokenExists) {
             return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
         }
-
         next();
-
+        return
     } catch (error) {
 
-        console.log("ggggggggggggggggg")
         return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
 };
 
-//cout documents
+export const logoutMiddleware = ()=>[
+    verifyTokenInCookie
+];

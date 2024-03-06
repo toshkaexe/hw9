@@ -1,13 +1,14 @@
 import {WithId} from "mongodb";
-import {CreateBlogModel, OutputBlogModel} from "../blogs/blog-models";
 
 export type DeviceAuthSessionDb = {
+
+    userId: string
     ip: string
     issuedAt: string
     deviceId: string
 
     deviceName: string
-    userId: string
+
     lastActiveDate: string
 }
 

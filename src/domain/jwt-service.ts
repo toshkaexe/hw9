@@ -20,6 +20,20 @@ export class jwtService {
         }
     }
 
+
+    static async  getUserIdFromToken(token:string) {
+        const secretKey = 'your_secret_key';
+        try {
+            const decoded:any = jwt.verify(token, secretKey);
+            return new ObjectId( decoded.userId);
+        } catch (error) {
+            // Если произошла ошибка при верификации токена
+            console.error("Error verifying token:", error);
+            return null;
+        }
+    }
+
+
     static async generateToken(userId: string, expiresIn: string) {
         console.log(userId, '111')
         const secretKey = 'your_secret_key';
@@ -29,13 +43,12 @@ export class jwtService {
     };
 
 
-    static async verifyRefreshToken(refreshToken: any) {
+
+    static async userfromToken(refreshToken: any) {
 
         const secretKey = 'your_secret_key';
         try {
-
             const res: any = jwt.verify(refreshToken, secretKey);
-
             return res.userId
         } catch (error) {
             return null;
@@ -47,11 +60,14 @@ export class jwtService {
         const secretKey = 'your_secret_key';
 
         try {
-
             const decodedToken: any = jwt.verify(token, secretKey);
             const deviceId = decodedToken.userId;
             const iat = new Date(decodedToken.iat * 1000).toISOString();
             const exp = new Date(decodedToken.exp * 1000).toISOString()
+
+            console.log("decodedToken: " + decodedToken);
+            console.log("iat: " + iat);
+            console.log("exp: " + exp);
 
             return {deviceId, iat, exp}
 
