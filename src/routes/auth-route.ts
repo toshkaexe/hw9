@@ -3,7 +3,6 @@ import {HTTP_STATUSES} from "../models/common";
 
 import {inputValidation} from "../validators/input-validation";
 import {validateAuthorization} from "../validators/auth-validation";
-import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
 import {UsersQueryRepository} from "../repositories/user-query-repository";
 import {
     authConfirmationValidation,
@@ -12,25 +11,18 @@ import {
 } from "../middleware/user-already-exist";
 import {authService} from "../domain/auth-service";
 import {logoutMiddleware, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
-import {restrictionValidator} from "../middleware/restrict-number-queries-middleware";
+import {
+    restrictNumberQueriesMiddleware,
+    restrictNumberQueriesNOUserMiddleware
+} from "../middleware/restrict-number-queries-middleware";
+import {apiRequestsCollection} from "../db/db";
 
 
 export const authRoute = Router({})
 
-authRoute.post('/registration',
-    registrationValidation(),
-    async (req: Request, res: Response): Promise<void> => {
-        const user = await authService.createUserAccount(req.body)
-        if (!user) {
-            res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
-            return
-        }
-        res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-        return
-    }
-)
 
 authRoute.post('/registration-email-resending',
+    restrictNumberQueriesMiddleware,
     authRegistrationResendingEmail(),
     async (req: Request, res: Response) => {
         const user = await authService.resendCode(req.body.email)
@@ -86,19 +78,30 @@ async function sendApiRequest(req: Request, res: Response) {
     await authService.saveApiRequest(apiReq);
 }
 
+authRoute.post('/registration',
+    restrictNumberQueriesMiddleware,
+    registrationValidation(),
+    async (req: Request, res: Response): Promise<void> => {
+
+        const user = await authService.createUserAccount(req.body)
+        if (!user) {
+            res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
+            return
+        }
+        res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+        return
+    }
+)
 authRoute.post('/login',
-    restrictionValidator(),
+    restrictNumberQueriesMiddleware,
     validateAuthorization(),
     inputValidation,
     async (req: Request, res: Response): Promise<void> => {
-        console.log("eeeeeeeeee")
-        await sendApiRequest(req, res);
         try {
             const authData = {
                 loginOrEmail: req.body.loginOrEmail,
                 password: req.body.password
             }
-            console.log("loginOrEmail"+authData.loginOrEmail + " "  +authData.password)
             const response =
                 await authService.checkCredentials(authData)
 
@@ -106,15 +109,12 @@ authRoute.post('/login',
                 res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
                 return
             }
-
             const token = await authService
                 .login(
                     req.body.loginOrEmail,
                     req.body.password,
                     req.ip!,
                     req.headers['user-agent'] ?? 'string')
-
-
             console.log(req.ip, 'req.ip');
             res.cookie('refreshToken', token?.refreshToken, {httpOnly: true, secure: true})
             res.send({accessToken: token?.accessToken})
@@ -126,7 +126,7 @@ authRoute.post('/login',
 )
 
 authRoute.get('/me',
- //   bearerAuth,
+    //   bearerAuth,
     async (req: Request, res: Response) => {
         const userId = req.user!.id
         const currentUser = await UsersQueryRepository.findCurrentUser(userId)
@@ -166,13 +166,13 @@ authRoute.post('/refresh-token',
 
 
 //restrictionValidator(),
-   // validateAuthorization(),
- //   inputValidation,
+// validateAuthorization(),
+//   inputValidation,
 
 authRoute.post('/logout',
     logoutMiddleware(),
     //verifyTokenInCookie,
-  //  inputValidation,
+    //  inputValidation,
     async (req: Request, res: Response) => {
         const deviceId = req.user!.deviceId as string
         const userId = req.user

@@ -12,9 +12,17 @@ export type DeviceAuthSessionDb = {
     lastActiveDate: string
 }
 
+
+export type SessionDb = {
+    ip: string
+    title: string
+    lastActiveDate: string
+    deviceId: string
+}
+
 // храним все случаи обращения к api
 export type ApiRequestModel = {
-    ip: string | undefined
+    ip: string
     url: string
     date: Date
 }

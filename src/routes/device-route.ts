@@ -25,7 +25,21 @@ devicesRoute.get('/',
         console.log("userID=>: " + userId);
         try {
             const sessions =
-                await deviceCollection.find({userId: userId}).toArray();
+                await deviceCollection.find({userId: userId})
+                    .project({
+                        _id: 0, // исключаем _id из результата
+                        ip: 1,
+                        deviceId: 1,
+                        title: 1,
+                        lastActiveDate: {
+                            $dateToString: {
+                                format: "%Y-%m-%dT%H:%M:%S.%LZ",
+                                date: "$lastActiveDate"
+                            }
+                        }
+                    })
+                    .toArray();
+            console.log("session: "+ sessions)
             res.json(sessions)
 
         } catch (error) {

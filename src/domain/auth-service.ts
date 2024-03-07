@@ -93,7 +93,8 @@ export const authService = {
             url: data.url,
             date: data.date
         };
-        const savedRequest = await RequestApiRepository.saveCollectionToDB(exampleRequest);
+        const savedRequest =
+            await RequestApiRepository.saveCollectionToDB(exampleRequest);
         if (!savedRequest) return;
         return savedRequest;
     },

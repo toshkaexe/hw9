@@ -18,11 +18,12 @@ export const verifyTokenInCookie = async (req: Request,
     console.log(req.cookies.refreshToken);
     const refreshToken = req.cookies?.refreshToken;
 
+    console.log("refreshToken: " +refreshToken);
     const userId = await jwtService.getUserIdByToken(refreshToken)
     console.log("....")
     console.log("userId:" + userId)
     console.log("---------> userId:" + userId)
-    if (!refreshToken) {
+    if (!userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
     try {
