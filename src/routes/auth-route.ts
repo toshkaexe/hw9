@@ -36,6 +36,7 @@ authRoute.post('/registration-email-resending',
 )
 
 authRoute.post('/registration-confirmation',
+    restrictNumberQueriesMiddleware,
     authConfirmationValidation(),
 
     async (req: Request, res: Response): Promise<void> => {
