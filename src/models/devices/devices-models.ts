@@ -1,25 +1,30 @@
 import {WithId} from "mongodb";
 
 export type DeviceAuthSessionDb = {
-
     userId: string
     ip: string
     issuedAt: string
     deviceId: string
-
     deviceName: string
-
     lastActiveDate: string
 }
 
+export const sessionDbMapper = (session: DeviceAuthSessionDb):
+    OutputSessionModel => {
+    return {
+        deviceId: session.deviceId,
+        ip: session.ip,
+        lastActiveDate: session.lastActiveDate,
+        title: session.deviceName
+    }
+}
 
-export type SessionDb = {
-    ip: string
+export type OutputSessionModel = {
+    deviceId: string,
+    ip: string,
+    lastActiveDate: string,
     title: string
-    lastActiveDate: string
-    deviceId: string
 }
-
 // храним все случаи обращения к api
 export type ApiRequestModel = {
     ip: string
@@ -42,3 +47,4 @@ export const apiRequestMapper = (apiRequest: WithId<ApiRequestModel>): OutputApi
         date: apiRequest.date
     }
 }
+

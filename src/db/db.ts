@@ -28,9 +28,7 @@ export const postsCollection = database.collection<PostDbModel>('posts');
 export const usersCollection = database.collection<UserDbModel>('users');
 export const commentsCollection = database.collection<CommentDbModel>('comments');
 export const blacklistTokens = database.collection<TokenDbModel>('tokens');
-
 export const deviceCollection = database.collection<DeviceAuthSessionDb>('devices');
-
 export const apiRequestsCollection = database.collection<ApiRequestModel>('apirequests');
 
 

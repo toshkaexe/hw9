@@ -46,7 +46,8 @@ export type Paginator<OutputBlogModel> = {
     items:	OutputBlogModel[]
 }
 
-export const blogMapper = (blog: WithId<CreateBlogModel>): OutputBlogModel => {
+export const blogMapper = (blog: WithId<CreateBlogModel>):
+    OutputBlogModel => {
     return {
         id: blog._id.toString(),
         name: blog.name,

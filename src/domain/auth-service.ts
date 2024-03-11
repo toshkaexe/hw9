@@ -89,7 +89,7 @@ export const authService = {
     async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
 
         const exampleRequest: ApiRequestModel = {
-            ip: data.ip,
+            ip: data.ip!,
             url: data.url,
             date: data.date
         };

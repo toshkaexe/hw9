@@ -12,6 +12,8 @@ import {restrictionValidator} from "../middleware/restrict-number-queries-middle
 import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {jwtService} from "../domain/jwt-service";
 import {usersRouter} from "./users-route";
+import {sessionDbMapper} from "../models/devices/devices-models";
+
 
 export const devicesRoute = Router({})
 
@@ -24,25 +26,16 @@ devicesRoute.get('/',
         const userId = await jwtService.userfromToken(refreshToken)
         console.log("userID=>: " + userId);
         try {
-            const sessions =
-                await deviceCollection.find({userId: userId})
-                    .project({
-                        _id: 0, // исключаем _id из результата
-                        ip: 1,
-                        deviceId: 1,
-                        title: 1,
-                        lastActiveDate: {
-                            $dateToString: {
-                                format: "%Y-%m-%dT%H:%M:%S.%LZ",
-                                date: "$lastActiveDate"
-                            }
-                        }
-                    })
-                    .toArray();
-            console.log("session: "+ sessions)
-            res.json(sessions)
+            let sessions =
+                await SessionRepository.getAllSessionByUser(userId);
+
+            console.log("session: " + sessions);
+
+
+            res.json(sessions);
 
         } catch (error) {
+            console.log(error)
             res.sendStatus(HTTP_STATUSES.InternalServerError_500);
         }
     });

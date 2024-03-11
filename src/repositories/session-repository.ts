@@ -1,5 +1,12 @@
-import {DeviceAuthSessionDb, ApiRequestModel} from "../models/devices/devices-models";
-import {apiRequestsCollection, deviceCollection} from "../db/db";
+import {
+    DeviceAuthSessionDb,
+    ApiRequestModel,
+    apiRequestMapper,
+    sessionDbMapper
+} from "../models/devices/devices-models";
+import { deviceCollection} from "../db/db";
+import {WithId} from "mongodb";
+import {UserDbModel} from "../models/users/users-models";
 
 
 export class SessionRepository {
@@ -9,6 +16,7 @@ export class SessionRepository {
             const res = await deviceCollection.insertOne(sessionData)
             return res.insertedId.toString()
         } catch (e) {
+            console.log(e)
             return null
         }
     }
@@ -36,14 +44,12 @@ export class SessionRepository {
     }
 
     static async deleteRemoteSession(deviceId: string, userId: string) {
-
         try {
             const res = await deviceCollection.deleteMany
             (
                 {
                     $and: [
-                        {"userId": userId}
-                        ,
+                        {"userId": userId},
                         {"deviceId": deviceId}
                     ]
                 }
@@ -53,7 +59,6 @@ export class SessionRepository {
             return false;
         }
     }
-
     static async deleteAllRemoteSessions() {
         try {
             const res = await deviceCollection.deleteMany({});
@@ -62,14 +67,18 @@ export class SessionRepository {
             return false;
         }
     }
-
     static async getUserBySessionID(sessionID: string) {
+        const user =
+            await deviceCollection.findOne({deviceId: sessionID});
+        if (!user) return null;
+        return user;
+    }
+    static async getAllSessionByUser(userId: string) {
 
-        const user = await deviceCollection.findOne({deviceId: sessionID});
+
+        const user = await deviceCollection.find({userId: userId}).toArray();
         if (!user) return null;
 
-        return user;
-
+        return user.map(sessionDbMapper);
     }
-
 }
