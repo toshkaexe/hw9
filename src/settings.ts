@@ -10,7 +10,7 @@ import {commentsRoute} from "./routes/comments-route";
 import {emailRoute} from "./routes/emailRoute";
 import {cookie} from "express-validator";
 import cookieParser from "cookie-parser";
-import {devicesRoute} from "./routes/device-route";
+import {deviceRoute} from "./routes/device-route";
 import {apiRequestsCollection} from "./db/db";
 
 
@@ -50,4 +50,4 @@ app.use('/users', usersRouter)
 app.use('/comments', commentsRoute)
 
 app.use('/email', emailRoute)
-app.use('/security/devices', devicesRoute)
+app.use('/security/devices', deviceRoute)
