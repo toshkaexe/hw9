@@ -23,6 +23,9 @@ export const verifyTokenInCookie = async (req: Request,
     console.log("....")
     console.log("userId:" + userId)
     console.log("---------> userId:" + userId)
+
+
+
     if (!userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
@@ -31,6 +34,7 @@ export const verifyTokenInCookie = async (req: Request,
         if (tokenExists) {
             return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
         }
+        req.user=userId
         next();
         return
     } catch (error) {

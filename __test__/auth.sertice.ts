@@ -1,3 +1,4 @@
+/*
 
 
 export const authService ={
@@ -25,4 +26,4 @@ export const authService ={
 ｝
 return newUser;
         }
-        }
+        }*/

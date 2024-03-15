@@ -1,3 +1,4 @@
+/*
 
 import {usersRouter} from "../src/routes/users-route";
 import request from "supertest";
@@ -10,7 +11,7 @@ dotenv.config()
 
 export const createUser = async (app: any) => {
     const resp = await request(app).post("/users")
-        .auth(process.env.TZ, process.env.AUTH_PASSWORD)
+        .auth( process.env.AUTH_PASSWORD, process.env.AUTH_PASSWORD)
         .send({
             login: 'test',
             email: 'test@gmail.com',
@@ -34,3 +35,4 @@ export const createUsers = async (app: any, count: number) => {
 
 
 
+*/

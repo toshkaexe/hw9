@@ -1,3 +1,4 @@
+/*
 export const nodemailerService = {
 
 
@@ -26,4 +27,4 @@ IUserDB = {
             console.error('Send email error', e);
 ｝
 return newUser;
-        }
+        }*/

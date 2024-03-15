@@ -17,7 +17,7 @@ export const NewsService = {
     },
 
 
-    async updatedNews(id: string,title: string, category: string,description: string, userId: string){
+   /* async updatedNews(id: string,title: string, category: string,description: string, userId: string){
         const news: any = await repo.findNewsById(id);
 
         if (!news) return {
@@ -30,4 +30,6 @@ export const NewsService = {
             errorMessage:`News with ${userId} have not news with id ${id}`
         }; //404  ; //403
     }
+
+    */
 }

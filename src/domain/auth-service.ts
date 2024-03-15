@@ -78,7 +78,9 @@ export const authService = {
         if (!expDate) return;
 
         const lastActiveDate = new Date().toISOString();
-        const updatedSession = await SessionRepository.updateDeviceSession(expDate, lastActiveDate,
+        const updatedSession =
+            await SessionRepository.updateDeviceSession(expDate,
+            lastActiveDate,
             user.id, deviceId)
         if (!updatedSession) return;
 

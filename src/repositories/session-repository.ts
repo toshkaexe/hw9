@@ -1,12 +1,5 @@
-import {
-    DeviceAuthSessionDb,
-    ApiRequestModel,
-    apiRequestMapper,
-    sessionDbMapper
-} from "../models/devices/devices-models";
+import {DeviceAuthSessionDb, sessionDbMapper} from "../models/devices/devices-models";
 import {deviceCollection} from "../db/db";
-import {WithId} from "mongodb";
-import {UserDbModel} from "../models/users/users-models";
 
 
 export class SessionRepository {
@@ -44,6 +37,8 @@ export class SessionRepository {
     }
 
     static async deleteRemoteSession(deviceId: string, userId: string) {
+        console.log(deviceId)
+        console.log(userId);
         try {
             const res = await deviceCollection.deleteMany
             (
@@ -74,6 +69,13 @@ export class SessionRepository {
             await deviceCollection.findOne({deviceId: sessionID});
         if (!user) return null;
         return user;
+    }
+
+    static async isSessionByIdExist(deviceId: string) {
+        const session =  await deviceCollection.findOne({deviceId: deviceId});
+        if (!session) return false;
+        return session;
+ 
     }
 
     static async getAllSessionByUser(userId: string) {

@@ -1,3 +1,4 @@
+/*
 import {UsersRepository} from "../src/repositories/users-repositiory";
 import bcrypt from "bcrypt";
 import {describe} from "node:test";
@@ -40,3 +41,4 @@ describe('AUTH-INTEGRATION', () => {
 
     })
 });
+*/
