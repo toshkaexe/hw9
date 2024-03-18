@@ -149,7 +149,8 @@ authRoute.post('/refresh-token',
         const deviceId = req.user!.deviceId as string
         const userId = req.user!._id
 
-        const tokens = await authService.refreshTokens(
+        const tokens
+            = await authService.refreshTokens(
             req.cookies['refreshToken'], userId, deviceId);
 
         if (!tokens) {
@@ -160,7 +161,8 @@ authRoute.post('/refresh-token',
         const {accessToken, refreshToken} = tokens;
 
         return res
-            .cookie('refreshToken', refreshToken, {httpOnly: true, secure: true})
+            .cookie('refreshToken', refreshToken,
+                {httpOnly: true, secure: true})
             .status(200)
             .send({accessToken})
     });

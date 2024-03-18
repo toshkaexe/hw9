@@ -16,14 +16,23 @@ import {ApiRequestModel, DeviceAuthSessionDb} from "../models/devices/devices-mo
 export const testingRoute = Router({})
 
 testingRoute.delete('/all-data', async (req: Request, res: Response) => {
+
     await blogsCollection.deleteMany({});
+
     await postsCollection.deleteMany({});
+
     await usersCollection.deleteMany({});
+
     await commentsCollection.deleteMany({});
+
     await blacklistTokens.deleteMany({});
+
     await deviceCollection.deleteMany({});
+
     await apiRequestsCollection.deleteMany({});
+
     //await database.dropDatabase();
+
     res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 
 
