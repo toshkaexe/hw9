@@ -16,42 +16,60 @@ export class SessionRepository {
 
     static async updateDeviceSession(expDate: string, lastActiveDate: string, userId: string, deviceId: string) {
         try {
-            const res = await deviceCollection.updateOne
-            (
-                {
-                    $and: [
-                        {"userId": userId},
-                        {"deviceId": deviceId}
-                    ]
-                }, {
-                    $set: {
-                        issuedAt: expDate,
-                        lastActiveDate: lastActiveDate
+            const res =
+                await deviceCollection.updateOne(
+                    {
+                        $and: [
+                            {"userId": userId},
+                            {"deviceId": deviceId}
+                        ]
+                    }, {
+                        $set: {
+                            issuedAt: expDate,
+                            lastActiveDate: lastActiveDate
+                        }
                     }
-                }
-            )
+                )
             return !!res.modifiedCount
         } catch (e) {
             return false;
         }
     }
 
-    static async deleteRemoteSession(deviceId: string, userId: string) {
-        console.log(deviceId)
-        console.log(userId);
+    static async deleteSessionByDeviceIdAndUserId(deviceId: string, userId: string) {
+        console.log("inDeleteRemote_Session_deviceId", deviceId)
+        console.log("inDeleteRemote_Session_userId", userId);
         try {
-            const res = await deviceCollection.deleteMany
-            (
-                {
-                    $and: [
-                        {"userId": userId},
-                        {"deviceId": deviceId}
-                    ]
-                }
-            )
+            const res =
+                await deviceCollection.deleteMany({
+                    $and: [{deviceId: deviceId}, {userId: userId}]
+                });
             return true;
         } catch (e) {
+            console.log({"error_by_deleting_session_by_device_id": e})
             return false;
+        }
+    }
+
+
+    static async findSessionByUserIdAndDeviceId(
+        userId: string,
+        deviceId: string
+    ) {
+        console.log("device_id_ in findSessionByUserIdAndDeviceId",deviceId)
+        console.log("user_id_ in findSessionByUserIdAndDeviceId",userId);
+        try {
+            const res =
+
+                await deviceCollection
+                    .findOne({ userId: userId, deviceId: deviceId }
+                );
+
+            console.log("res_in_findSessionByUserIdAndDeviceId", res);
+            return res;
+        } catch (e) {
+            console.log({'error_message_in_findSessionByUserIdAndDeviceId': e})
+            return null;
         }
     }
 
@@ -72,10 +90,11 @@ export class SessionRepository {
     }
 
     static async isSessionByIdExist(deviceId: string) {
-        const session =  await deviceCollection.findOne({deviceId: deviceId});
+        const session = await
+            deviceCollection.findOne({deviceId: deviceId});
         if (!session) return false;
         return session;
- 
+
     }
 
     static async getAllSessionByUser(userId: string) {

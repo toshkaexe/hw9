@@ -1,10 +1,11 @@
 //index.d.ts
 import {UserDbModel, UserOutputModel} from "../models/users/users-models";
+import {ObjectId} from "mongodb";
 
 declare global {
     namespace Express {
         export interface Request {
-            user: UserOutputModel | null
+            user: {userId: ObjectId, deviceId: ObjectId} | null
         }
     }
 }

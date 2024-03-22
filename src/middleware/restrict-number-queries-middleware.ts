@@ -1,8 +1,9 @@
 import {NextFunction, Response, Request} from "express";
 import {apiRequestsCollection} from "../db/db";
 import {HTTP_STATUSES} from "../models/common";
-import {authService} from "../domain/auth-service";
+
 import {RequestApiRepository} from "../repositories/request-api-repository";
+import {AuthService} from "../domain/auth-service";
 
 
 export const restrictNumberQueriesMiddleware = async (req: Request,
@@ -18,7 +19,7 @@ export const restrictNumberQueriesMiddleware = async (req: Request,
             date: date
         }
         //save in DB
-        await authService.saveApiRequest(apiReq);
+        await AuthService.saveApiRequest(apiReq);
         const currentDateMinus10Seconds = new Date(Date.now() - 10 * 1000);
 
         //  console.log(date);
@@ -64,7 +65,7 @@ export const restrictNumberQueriesNOUserMiddleware = async (req: Request,
             password: req.body.password
         }
         const login =
-            await authService.checkCredentials(authData)
+            await AuthService.checkCredentials(authData)
 
         console.error("У нас меньше, чем 5запросов ");
         console.error(countDocuments);
@@ -100,5 +101,5 @@ export const addApiRequest = async (req: Request, res: Response, next: NextFunct
         date: new Date()
     }
 
-    const apiRequest = await authService.saveApiRequest(apiReq);
+    const apiRequest = await AuthService.saveApiRequest(apiReq);
 }

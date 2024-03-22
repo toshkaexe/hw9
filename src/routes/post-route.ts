@@ -22,6 +22,7 @@ import {CommentsService} from "../domain/comments-service";
 import {CommentOutputModel} from "../models/comments/comment-model";
 import {validateComments, validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
+import {UsersRepository} from "../repositories/users-repositiory";
 
 export const postRoute = Router({})
 
@@ -110,7 +111,7 @@ postRoute.post('/:postId/comments',
 
     validateContents(),
     async (req: Request, res: Response) => {
-        const {id: userId, login: userLogin} = req.user!
+        /*const {id: userId, login: userLogin} = req.user!
         const postId = req.params.postId
         const content = req.body.content
 
@@ -122,5 +123,5 @@ postRoute.post('/:postId/comments',
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
         return res.status(HTTP_STATUSES.CREATED_201).send(newComment)
-    }
+    */}
 )

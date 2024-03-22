@@ -9,13 +9,14 @@ import {
     authRegistrationResendingEmail,
     registrationValidation
 } from "../middleware/user-already-exist";
-import {authService} from "../domain/auth-service";
-import {logoutMiddleware, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
+import {AuthService} from "../domain/auth-service";
+import {logoutMiddleware, logoutTokenInCookie, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {
     restrictNumberQueriesMiddleware,
-    restrictNumberQueriesNOUserMiddleware
+
 } from "../middleware/restrict-number-queries-middleware";
-import {apiRequestsCollection} from "../db/db";
+import {bearerAuth} from "../middleware/auth-middlewares";
+import {SessionRepository} from "../repositories/session-repository";
 
 
 export const authRoute = Router({})
@@ -25,7 +26,7 @@ authRoute.post('/registration-email-resending',
     restrictNumberQueriesMiddleware,
     authRegistrationResendingEmail(),
     async (req: Request, res: Response) => {
-        const user = await authService.resendCode(req.body.email)
+        const user = await AuthService.resendCode(req.body.email)
         if (!user) {
             res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
             return
@@ -41,7 +42,7 @@ authRoute.post('/registration-confirmation',
 
     async (req: Request, res: Response): Promise<void> => {
         const code = req.body.code;
-        const corfirmResult = await authService.confirmEmail(code);
+        const corfirmResult = await AuthService.confirmEmail(code);
         if (!corfirmResult) {
             res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
             return
@@ -76,7 +77,7 @@ async function sendApiRequest(req: Request, res: Response) {
         url: req.baseUrl || req.originalUrl,
         date: new Date()
     }
-    await authService.saveApiRequest(apiReq);
+    await AuthService.saveApiRequest(apiReq);
 }
 
 authRoute.post('/registration',
@@ -84,7 +85,8 @@ authRoute.post('/registration',
     registrationValidation(),
     async (req: Request, res: Response): Promise<void> => {
 
-        const user = await authService.createUserAccount(req.body)
+        const user =
+            await AuthService.createUserAccount(req.body)
         if (!user) {
             res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
             return
@@ -104,13 +106,13 @@ authRoute.post('/login',
                 password: req.body.password
             }
             const response =
-                await authService.checkCredentials(authData)
+                await AuthService.checkCredentials(authData)
 
             if (!response) {
                 res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
                 return
             }
-            const token = await authService
+            const token = await AuthService
                 .login(
                     req.body.loginOrEmail,
                     req.body.password,
@@ -121,45 +123,54 @@ authRoute.post('/login',
             res.send({accessToken: token?.accessToken})
             res.status(200)
         } catch (error) {
-            res.sendStatus(HTTP_STATUSES.InternalServerError_500)
+            console.log({login_error: error})
+            res.sendStatus(HTTP_STATUSES.InternalServerError_500) // better bad request
         }
     }
 )
 
 authRoute.get('/me',
-    //   bearerAuth,
+    bearerAuth,
     async (req: Request, res: Response) => {
-        const userId = req.user!.id
-        const currentUser = await UsersQueryRepository.findCurrentUser(userId)
+        const userId = req.user!.userId
+        const currentUser = await UsersQueryRepository.findCurrentUser(userId.toString())
         console.log(currentUser)
 
         if (!currentUser)
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-        res.send({
+
+        return res.send({
             email: currentUser.email,
             login: currentUser.login,
             userId: currentUser.id
         })
-        return
+
     })
 
 authRoute.post('/refresh-token',
     verifyTokenInCookie,
     async (req: Request, res: Response) => {
-        const deviceId = req.user!.deviceId as string
-        const userId = req.user!._id
 
+        //?? откуда user знает про deviceId и ш
+        const deviceId = req.user!.deviceId
+        const userId = req.user!.userId;
+
+
+        //   const userId = req.user
+
+        console.log("deviceId: " + deviceId)
+        console.log("userId: " + userId)
         const tokens
-            = await authService.refreshTokens(
+            = await AuthService.updateTokens(
             req.cookies['refreshToken'], userId, deviceId);
-
+        console.log({
+            "token_access=": tokens?.accessToken,
+            "token_refresh=": tokens?.refreshToken
+        });
         if (!tokens) {
-            res.sendStatus(500);
-            return
+            return res.sendStatus(500);
         }
-
         const {accessToken, refreshToken} = tokens;
-
         return res
             .cookie('refreshToken', refreshToken,
                 {httpOnly: true, secure: true})
@@ -168,18 +179,23 @@ authRoute.post('/refresh-token',
     });
 
 
-//restrictionValidator(),
-// validateAuthorization(),
-//   inputValidation,
-
 authRoute.post('/logout',
-    logoutMiddleware(),
-    //verifyTokenInCookie,
-    //  inputValidation,
+
+    logoutTokenInCookie,
     async (req: Request, res: Response) => {
-        const deviceId = req.user!.deviceId as string
-        const userId = req.user
-        const isLogout = await authService.logout(deviceId, userId);
+        const deviceId = req.user!.deviceId
+        const userId = req.user!.userId
+
+        console.log("deviceId_logout", deviceId)
+        console.log("userId_logout", userId)
+
+        const isLogout = await AuthService.logout(
+            deviceId.toString(),
+            userId.toString());
+
+
+
+
         if (!isLogout) return res.sendStatus(401)
-        return res.sendStatus(204)
+        return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
     });

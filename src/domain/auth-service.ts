@@ -13,35 +13,40 @@ import {CreateUserInputModel} from "../models/users/users-models";
 import bcrypt from "bcrypt";
 import {LoginInputModel} from "../models/auth/auth-models";
 
-export const authService = {
 
-    async logout(deviceId: string, userId: string) {
-        return await SessionRepository.deleteRemoteSession(deviceId, userId);
-    },
 
-    async login(loginOrEmail: string,
+const expiresAccessTokenTime = '10s';
+const expiresRefreshTokenTime='20s';
+export class AuthService  {
+
+    static async logout(deviceId: string, userId: string) {
+        console.log("DeviceId in logout", deviceId);
+        console.log("userId in logout", userId);
+        return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
+    }
+
+    static async login(loginOrEmail: string,
                 password: string,
                 ip: string,
                 deviceName: string) {
 
         const user =
             await UsersRepository.findByLoginOrEmail(loginOrEmail)
-        if (!user) return null
+        if (!user) return null;
 
         const deviceId=randomUUID();
-
         //Новый рефреш токен deviceId+userId
         const refreshTokenPayload = {
             deviceId,
-            userId: user._id.toString()
-        }
-
-        // acessToken = публичный и нет привязки к девейсу
+            userId: user._id.toString()}
+        // accessToken = публичный и нет привязки к девейсу
+        const accessTokenPayload = {
+            deviceId,
+            userId: user._id.toString()}
         const accessToken =
-            await jwtService.generateToken(user._id.toString(), '10s')
+            await jwtService.generateToken(accessTokenPayload, expiresAccessTokenTime)
         const refreshToken =
-            await jwtService.generateRefreshToken(refreshTokenPayload, '20s')
-
+            await jwtService.generateRefreshToken(refreshTokenPayload, expiresRefreshTokenTime)
         const expDate = await jwtService.getExpirationDate(refreshToken);
         if (!expDate) return null;
 
@@ -59,21 +64,23 @@ export const authService = {
         if (!sessionSaved) return null;
 
         return {accessToken, refreshToken}
-    },
+    }
 
     //обновление refreshTokens
-    async refreshTokens(oldRefreshToken: string, userId: ObjectId, deviceId: string) {
-
+    static async updateTokens(oldRefreshToken: string, userId: ObjectId, deviceId: ObjectId) {
         const user = await UsersService.findUserById(userId);
         if (!user) return;
+        const accessToken = await jwtService.generateToken({userId: user.id, deviceId: deviceId.toString()}, expiresAccessTokenTime)
 
-        const accessToken = await jwtService.generateToken(user.id, '10s')
-        const refreshToken = await jwtService.generateRefreshToken(
+        console.log("access_token_from_updateTokens"+ accessToken);
+
+        const refreshToken =
+            await jwtService.generateRefreshToken(
             {
                 deviceId,
                 userId: user.id
-            }, '20s')
-
+            }, expiresRefreshTokenTime)
+        console.log("refresh_token_from_updateTokens"+ refreshToken);
         const expDate = await jwtService.getExpirationDate(refreshToken)
         if (!expDate) return;
 
@@ -81,14 +88,14 @@ export const authService = {
         const updatedSession =
             await SessionRepository.updateDeviceSession(expDate,
             lastActiveDate,
-            user.id, deviceId)
+            user.id, deviceId.toString())
         if (!updatedSession) return;
 
         return {accessToken, refreshToken}
-    },
+    }
 
 
-    async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
+    static async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
 
         const exampleRequest: ApiRequestModel = {
             ip: data.ip!,
@@ -99,9 +106,9 @@ export const authService = {
             await RequestApiRepository.saveCollectionToDB(exampleRequest);
         if (!savedRequest) return;
         return savedRequest;
-    },
+    }
 
-    async resendCode(email: string) {
+    static async resendCode(email: string) {
         const user = await UsersRepository.findByLoginOrEmail(email)
         if (!user) return null
         if (user.emailConfirmation.isConfirmed) return false
@@ -132,9 +139,9 @@ export const authService = {
             console.log(error)
             return false
         }
-    },
+    }
 
-    async createUserAccount(inputData: CreateUserInputModel): Promise<null | boolean> {
+    static async createUserAccount(inputData: CreateUserInputModel): Promise<null | boolean> {
         const userByEmail = await UsersRepository.findByLoginOrEmail(inputData.login)
         if (userByEmail) return false
         const passwordHash = await bcrypt.hash(inputData.password, 10)
@@ -181,22 +188,24 @@ export const authService = {
             await UsersRepository.deleteUser(user._id.toString())
             return null
         }
-    },
+    }
 
-    async checkCredentials(body: LoginInputModel) {
-        const user = await UsersRepository.findByLoginOrEmail(body.loginOrEmail)
-        console.log("uuu")
-        console.log(user)
+    static async checkCredentials(body: LoginInputModel) {
+        const user =
+            await UsersRepository.findByLoginOrEmail(body.loginOrEmail)
+
+        console.log("user_check_Credentials", user);
         if (!user) return null
 
-        const compare = await bcrypt.compare(body.password, user.accountData.passwordHash)
+        const compare =
+            await bcrypt.compare(body.password,  user.accountData.passwordHash)
         if (compare) {
             return user
         }
         return null
-    },
+    }
 
-    async confirmEmail(code: string) {
+    static async confirmEmail(code: string) {
         const user = await UsersRepository.findUserByConfirmationCode(code)
         if (!user) return false
         if (user.emailConfirmation.isConfirmed) return false
@@ -205,7 +214,7 @@ export const authService = {
 
         let result = await UsersRepository.updateConfirmation(user._id.toString())
         return result
-    },
+    }
 
 }
 

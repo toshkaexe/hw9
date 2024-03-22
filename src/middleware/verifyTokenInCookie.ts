@@ -1,38 +1,71 @@
 import {NextFunction, Response, Request} from "express";
 import {HTTP_STATUSES} from "../models/common";
-import dotenv from 'dotenv';
-import {ObjectId} from "mongodb";
-import {UsersService} from "../domain/users-service";
 import {jwtService} from "../domain/jwt-service";
-import {UserViewModel} from "../models/users/users-models";
-import {blacklistTokens} from "../db/db";
-import request from "supertest";
-import {inputValidation} from "../validators/input-validation";
-import {emailExistValidation, emailValidation} from "./user-already-exist";
+import {SessionRepository} from "../repositories/session-repository";
 
 
 export const verifyTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
-    const userId = await jwtService.getUserIdByToken(refreshToken);
-    if (!userId) {
+    console.log("refresh_in verifyToken: "+refreshToken)
+    //if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+
+    const  result= await jwtService.getUserIdAndDeviceId(refreshToken);
+    if (!result?.userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+
     }
+
     try {
-        const tokenExists =
-            await blacklistTokens.findOne({accessToken: refreshToken});
-        if (tokenExists) {
-            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
-        }
-        req.user = userId
+
+        const session =
+            await SessionRepository
+                .findSessionByUserIdAndDeviceId( result!.deviceId, result!.userId.toString())
+
+            if (!session)  return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+
+        req.user= {userId :result!.userId, deviceId: result!.deviceId}
         next();
         return
     } catch (error) {
-        return res.status(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        console.log("refresh error: ", error)
+        return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
 };
 
+
+
+
+export const logoutTokenInCookie = async (req: Request,
+                                          res: Response,
+                                          next: NextFunction) => {
+    const refreshToken = req.cookies?.refreshToken;
+    console.log("refresh_in_logoutTokenInCookie: "+refreshToken)
+    if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+
+    const  result=
+        await jwtService.getUserIdAndDeviceId(refreshToken);
+    if (!result) {
+         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+
+    }
+    const deviceId = result?.deviceId;
+    const userId= result?.userId.toString();
+
+    console.log("result_logoutTokenInCookie_device_id = ",deviceId);
+    console.log("result_logoutTokenInCookie_user_id = ",userId);
+
+
+
+
+        req.user= {userId :result!.userId, deviceId: result!.deviceId}
+        next();
+        return
+
+};
+
+// название иземенить
 export const logoutMiddleware = () => [
     verifyTokenInCookie
 ];

@@ -13,7 +13,7 @@ export const db: DBType = {
     posts: []
 }
 
-const port = 80;
+const port = 3000;
 
 const uri =  process.env.MONGO_URI_CLOUD
     || process.env.MONGO_URI_LOCAL  || 'mongodb+srv://antonzeltser:admin@cluster0.rmbeaqk.mongodb.net/'

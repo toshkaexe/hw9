@@ -9,7 +9,6 @@ import {jwtService} from "../domain/jwt-service";
 export const deviceRoute = Router({})
 
 deviceRoute.get('/',
-    verifyTokenInCookie,
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
         try {
@@ -33,12 +32,13 @@ deviceRoute.get('/',
         }
     });
 
-deviceRoute.delete('/:id',
-    verifyTokenInCookie,
+deviceRoute.delete('/:deviceId',
+    verifyTokenInCookie, // сессии юзера
     async (req: Request, res: Response) => {
 
         const isDeviceExist =
-            await SessionRepository.isSessionByIdExist(req.params.id);
+            await SessionRepository.isSessionByIdExist(req.params.deviceId);
+        console.log("isDeviceExist: ", isDeviceExist)
         if (isDeviceExist == false) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
             return;
@@ -49,23 +49,18 @@ deviceRoute.delete('/:id',
             res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
             return;
         }
-/*        console.log(isDeviceExist)
-        if (!isDeviceExist) {
-            console.log("deleted session")
-            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-            return;
-        }*/
+
         const isDeleted =
-            await SessionRepository.deleteRemoteSession(req.params.id, userId.toString())
+            await SessionRepository.deleteSessionByDeviceIdAndUserId(req.params.id, userId.toString())
 
         console.log("isDeleted" + isDeleted);
-        isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
+        isDeleted ? res.sendStatus(HTTP_STATUSES.Forbidden_403) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
         return
     })
 
 deviceRoute.delete('/',
-    authMiddleware,
+
     async (req: Request, res: Response) => {
         const isDeleted = await SessionRepository.deleteAllRemoteSessions()
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :

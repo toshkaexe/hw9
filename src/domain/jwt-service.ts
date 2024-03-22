@@ -1,21 +1,28 @@
-import {ObjectId, WithId} from "mongodb";
+import {ObjectId} from "mongodb";
 
 import jwt from 'jsonwebtoken';
-import {UserDbModel} from "../models/users/users-models";
+
 
 const secretWord = process.env.JWT_SECRET || "test";
 
 export class jwtService {
-
-    static async getUserIdByToken(token: string) {
+    static async getUserIdAndDeviceId(token: string) {
         const secretKey = 'your_secret_key';
         try {
-            console.log("token" + token);
+            console.log("token in getUserIdAndDeviceId: " + token);
             const result: any = jwt.verify(token, secretKey)
-            console.log("result=" + result);
+            if (!result) return null;
+            console.log("result_in_getUserIdAndDeviceId=" + result);
 
-            return new ObjectId(result.userId)
+            const userId: ObjectId = new ObjectId(result.userId);
+            const deviceId = result.deviceId;
+
+            console.log("user_id_ in getUserIDandDeviceId", userId)
+            console.log("device_id_ in getUserIDandDeviceId", deviceId)
+            return {userId, deviceId}
+
         } catch (error) {
+            console.log({get_user_by_token_error: error})
             return null
         }
     }
@@ -24,7 +31,7 @@ export class jwtService {
     static async  getUserIdFromToken(token:string) {
         const secretKey = 'your_secret_key';
         try {
-            const decoded:any = jwt.verify(token, secretKey);
+            const decoded: any = jwt.verify(token, secretKey);
             return new ObjectId( decoded.userId);
         } catch (error) {
             // Если произошла ошибка при верификации токена
@@ -34,10 +41,10 @@ export class jwtService {
     }
 
 
-    static async generateToken(userId: string, expiresIn: string) {
-        console.log(userId, '111')
+    static async generateToken(payload: {deviceId: string, userId:string}, expiresIn: string) {
+        //console.log(userId, '111')
         const secretKey = 'your_secret_key';
-        const sign = jwt.sign({userId}, secretKey,
+        const sign = jwt.sign(payload, secretKey,
             {expiresIn: expiresIn});
         return sign
     };
@@ -93,6 +100,7 @@ export class jwtService {
         try {const refreshToken =  jwt.sign(payload,  secretKey, {expiresIn});
             return refreshToken;
         } catch (error) {
+            console.log({error_generate_refresh_token: error})
             throw new Error('Error generating refresh token');
         }
     }

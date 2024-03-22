@@ -5,8 +5,8 @@ import {ObjectId} from "mongodb";
 import {UsersService} from "../domain/users-service";
 import {jwtService} from "../domain/jwt-service";
 import {UserViewModel} from "../models/users/users-models";
+import {SessionRepository} from "../repositories/session-repository";
 
-//import {jwtService} from "../application/jwt-service";
 
 dotenv.config()
 
@@ -39,29 +39,44 @@ export const authMiddleware = (req: Request,
 }
 
 
-
 export const bearerAuth = async (req: Request,
                                  res: Response,
                                  next: NextFunction) => {
-    const auth = req.headers['authorization']
-    console.log("auth=");
-    console.log(auth);
-    if (!auth) {
-        return res.send(HTTP_STATUSES.NOT_AUTHORIZED_401)
-    }
-    const token = auth.split(' ')[1]  //bearer fasdfasdfasdf
+    try {
+        const auth = req.headers['authorization']
+        console.log("auth=");
+        console.log(auth);
 
-    const userId = await jwtService.getUserIdByToken(token)
-    console.log(userId, 'its userid')
-    if (!userId) return  res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-    if(!ObjectId.isValid(userId)) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+       if (!auth) {
+           return res.send(HTTP_STATUSES.NOT_AUTHORIZED_401)
+       }
+       const token = auth.split(' ')[1]  //bearer fasdfasdfasdf
 
-    const user: UserViewModel | null = await UsersService.findUserById(userId)
-    if (user) {
-        req.user = user
-        return next()
-    }
-    console.log('not user')
-    res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+       const userIdAndDeviceId = await jwtService.getUserIdAndDeviceId(token)
+       console.log(userIdAndDeviceId?.userId, '= its userid')
+        console.log(userIdAndDeviceId?.deviceId, ' = its deviceId')
+       if (!userIdAndDeviceId) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+       if (!ObjectId.isValid(userIdAndDeviceId.userId)) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+
+       const user: UserViewModel | null = await UsersService.findUserById(userIdAndDeviceId.userId)
+
+
+     const session = await SessionRepository.findSessionByUserIdAndDeviceId(
+         userIdAndDeviceId!.userId.toString(),
+         userIdAndDeviceId!.deviceId
+     )
+
+        console.log("session ", session)
+       if (user && session) {
+           req.user = userIdAndDeviceId  //класть только userId
+           return next()
+       }
+       console.log('not user')
+       res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+   }
+   catch (e)
+   {
+       console.log("bearere + ",e)
+   }
 }
 

@@ -35,7 +35,8 @@ blogRoute.get('/',
 blogRoute.get('/:blogId',
 
     async (req: Request, res: Response): Promise<void> => {
-        const foundBlog: OutputBlogModel | null = await BlogsQueryRepository.findBlogById(req.params.blogId)
+        const foundBlog: OutputBlogModel | null =
+            await BlogsQueryRepository.findBlogById(req.params.blogId)
         foundBlog ? res.status(HTTP_STATUSES.OK_200).send(foundBlog) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
     })
