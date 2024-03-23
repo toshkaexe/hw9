@@ -1,11 +1,9 @@
 import {Router, Response, Request} from "express";
 import {HTTP_STATUSES} from "../models/common";
-import { checkHeaderForDeviceId} from "../middleware/auth-middlewares";
+import {checkRefreshTokenFromHeader} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
-
-import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {jwtService} from "../domain/jwt-service";
-import {UsersQueryRepository} from "../repositories/user-query-repository";
+
 
 export const deviceRoute = Router({})
 
@@ -37,31 +35,41 @@ deviceRoute.get('/',
 deviceRoute.delete('/:deviceId',
     //проверка на refreshtoken который в куках
 
-    checkHeaderForDeviceId,
-    verifyTokenInCookie, // сессии юзера
+    checkRefreshTokenFromHeader,
     async (req: Request, res: Response) => {
+        const refreshToken = req.cookies?.refreshToken;
+
+        const result =
+            await jwtService.getUserIdAndDeviceId(refreshToken);
+        console.log("result", result);
+        const userId = result!.userId.toString();
+        const deviceId = result!.deviceId;
+
 
         const isDeviceExist =
-            await SessionRepository.isSessionByIdExist(req.params.deviceId);
+            await SessionRepository.getSessionByIdExist(req.params.deviceId);
         console.log("isDeviceExist: ", isDeviceExist)
         if (isDeviceExist == false) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
             return;
         }
 
+        if (isDeviceExist.userId !== userId) {
+            return res.sendStatus(401)
+        }
+
         const isDeleted =
-            await SessionRepository.
-            deleteSessionByDeviceIdAndUserId(req.params.id, req.user!.userId.toString())
+            await SessionRepository.deleteSessionByDeviceIdAndUserId(req.params.deviceId,
+                userId.toString())
 
         console.log("isDeleted" + isDeleted);
-        isDeleted ? res.sendStatus(HTTP_STATUSES.Forbidden_403) :
+        isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
-        return
+        return;
     })
 
 deviceRoute.delete('/',
-   // checkHeader,
-    checkHeaderForDeviceId,
+    checkRefreshTokenFromHeader,
     async (req: Request, res: Response) => {
         const isDeleted = await SessionRepository.deleteAllRemoteSessions()
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :

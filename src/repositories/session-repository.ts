@@ -41,9 +41,9 @@ export class SessionRepository {
         console.log("inDeleteRemote_Session_userId", userId);
         try {
             const res =
-                await deviceCollection.deleteMany({
-                    $and: [{deviceId: deviceId}, {userId: userId}]
-                });
+                await deviceCollection.deleteOne(
+                    {deviceId: deviceId, userId: userId});
+            console.log("delete_res=", res)
             return true;
         } catch (e) {
             console.log({"error_by_deleting_session_by_device_id": e})
@@ -56,14 +56,14 @@ export class SessionRepository {
         userId: string,
         deviceId: string
     ) {
-        console.log("device_id_ in findSessionByUserIdAndDeviceId",deviceId)
-        console.log("user_id_ in findSessionByUserIdAndDeviceId",userId);
+        console.log("device_id_ in findSessionByUserIdAndDeviceId", deviceId)
+        console.log("user_id_ in findSessionByUserIdAndDeviceId", userId);
         try {
             const res =
 
                 await deviceCollection
-                    .findOne({ userId: userId, deviceId: deviceId }
-                );
+                    .findOne({userId: userId, deviceId: deviceId}
+                    );
 
             console.log("res_in_findSessionByUserIdAndDeviceId", res);
             return res;
@@ -75,7 +75,8 @@ export class SessionRepository {
 
     static async deleteAllRemoteSessions() {
         try {
-            const res = await deviceCollection.deleteMany({});
+            const res =
+                await deviceCollection.deleteMany({});
             return true;
         } catch (e) {
             return false;
@@ -89,13 +90,13 @@ export class SessionRepository {
         return user;
     }
 
-    static async isSessionByIdExist(deviceId: string) {
+    static async getSessionByIdExist(deviceId: string) {
         const session = await
             deviceCollection.findOne({deviceId: deviceId});
         if (!session) return false;
         return session;
-
     }
+
 
     static async getAllSessionByUser(userId: string) {
         const user = await deviceCollection.find({userId: userId}).toArray();

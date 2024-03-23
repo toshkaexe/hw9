@@ -15,14 +15,15 @@ import {LoginInputModel} from "../models/auth/auth-models";
 
 
 
-const expiresAccessTokenTime = '10s';
-const expiresRefreshTokenTime='20s';
+const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
+const expiresRefreshTokenTime='20s'; //process.env.REFRESH_TOKEN_TIME;
 export class AuthService  {
 
     static async logout(deviceId: string, userId: string) {
         console.log("DeviceId in logout", deviceId);
-        console.log("userId in logout", userId);
-        return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
+        console.log("UserId in logout", userId);
+        return await
+            SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
     }
 
     static async login(loginOrEmail: string,
