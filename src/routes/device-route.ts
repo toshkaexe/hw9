@@ -33,29 +33,25 @@ deviceRoute.get('/',
     });
 
 deviceRoute.delete('/:deviceId',
-    //проверка на refreshtoken который в куках
-
     checkRefreshTokenFromHeader,
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
-
         const result =
             await jwtService.getUserIdAndDeviceId(refreshToken);
         console.log("result", result);
         const userId = result!.userId.toString();
-        const deviceId = result!.deviceId;
 
-
-        const isDeviceExist =
+        const session =
             await SessionRepository.getSessionByIdExist(req.params.deviceId);
-        console.log("isDeviceExist: ", isDeviceExist)
-        if (isDeviceExist == false) {
+
+        console.log("isDeviceExist: ", session)
+        if (session == false) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
             return;
         }
 
-        if (isDeviceExist.userId !== userId) {
-            return res.sendStatus(401)
+        if (session.userId !== userId) {
+            return res.sendStatus(403);
         }
 
         const isDeleted =
