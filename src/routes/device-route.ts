@@ -1,8 +1,8 @@
 import {Router, Response, Request} from "express";
 import {HTTP_STATUSES} from "../models/common";
-import {authMiddleware, bearerAuth, checkHeader} from "../middleware/auth-middlewares";
+import { checkHeaderForDeviceId} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
-import {restrictionValidator} from "../middleware/restrict-number-queries-middleware";
+
 import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {jwtService} from "../domain/jwt-service";
 import {UsersQueryRepository} from "../repositories/user-query-repository";
@@ -35,7 +35,9 @@ deviceRoute.get('/',
     });
 
 deviceRoute.delete('/:deviceId',
-    checkHeader,
+    //проверка на refreshtoken который в куках
+
+    checkHeaderForDeviceId,
     verifyTokenInCookie, // сессии юзера
     async (req: Request, res: Response) => {
 
@@ -58,7 +60,8 @@ deviceRoute.delete('/:deviceId',
     })
 
 deviceRoute.delete('/',
-
+   // checkHeader,
+    checkHeaderForDeviceId,
     async (req: Request, res: Response) => {
         const isDeleted = await SessionRepository.deleteAllRemoteSessions()
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
