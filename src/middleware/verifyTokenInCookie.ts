@@ -8,24 +8,20 @@ export const verifyTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
-    console.log("refresh_in verifyToken: "+refreshToken)
+    console.log("refresh_in verifyToken: " + refreshToken)
     //if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
-    const  result= await jwtService.getUserIdAndDeviceId(refreshToken);
+    const result = await jwtService.getUserIdAndDeviceId(refreshToken);
     if (!result?.userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-
     }
-
     try {
-
         const session =
-            await SessionRepository
-                .findSessionByUserIdAndDeviceId( result!.deviceId, result!.userId.toString())
+            await SessionRepository.findSessionByUserIdAndDeviceId(result!.deviceId, result!.userId.toString())
 
-            if (!session)  return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+        if (!session) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 
-        req.user= {userId :result!.userId, deviceId: result!.deviceId}
+        req.user = {userId: result!.userId, deviceId: result!.deviceId}
         next();
         return
     } catch (error) {
@@ -35,33 +31,29 @@ export const verifyTokenInCookie = async (req: Request,
 };
 
 
-
-
 export const logoutTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
-    console.log("refresh_in_logoutTokenInCookie: "+refreshToken)
-    if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+    console.log("refresh_in_logoutTokenInCookie: " + refreshToken)
+    if (!refreshToken) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
-    const  result=
+    const result =
         await jwtService.getUserIdAndDeviceId(refreshToken);
     if (!result) {
-         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
 
     }
     const deviceId = result?.deviceId;
-    const userId= result?.userId.toString();
+    const userId = result?.userId.toString();
 
-    console.log("result_logoutTokenInCookie_device_id = ",deviceId);
-    console.log("result_logoutTokenInCookie_user_id = ",userId);
-
-
+    console.log("result_logoutTokenInCookie_device_id = ", deviceId);
+    console.log("result_logoutTokenInCookie_user_id = ", userId);
 
 
-        req.user= {userId :result!.userId, deviceId: result!.deviceId}
-        next();
-        return
+    req.user = {userId: result!.userId, deviceId: result!.deviceId}
+    next();
+    return
 
 };
 

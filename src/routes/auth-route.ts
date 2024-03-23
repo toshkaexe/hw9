@@ -13,10 +13,8 @@ import {AuthService} from "../domain/auth-service";
 import {logoutMiddleware, logoutTokenInCookie, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {
     restrictNumberQueriesMiddleware,
-
 } from "../middleware/restrict-number-queries-middleware";
 import {bearerAuth} from "../middleware/auth-middlewares";
-import {SessionRepository} from "../repositories/session-repository";
 
 
 export const authRoute = Router({})
@@ -52,25 +50,6 @@ authRoute.post('/registration-confirmation',
     }
 )
 
-
-/*//test post ApiRequests
-authRoute.post('/apirequest',
-    // validateAuthorization(),
-    inputValidation,
-    async (req: Request, res: Response): Promise<void> => {
-
-        const apiReq = {
-            ip: req.ip,
-            url: req.baseUrl || req.originalUrl,
-            date: new Date()
-        }
-
-        const apiRequest = await authService.saveApiRequest(apiReq);
-
-        apiRequest ? res.sendStatus(HTTP_STATUSES.OK_200) :
-            res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-
-    })*/
 async function sendApiRequest(req: Request, res: Response) {
     const apiReq = {
         ip: req.ip,
@@ -130,10 +109,12 @@ authRoute.post('/login',
 )
 
 authRoute.get('/me',
+
     bearerAuth,
     async (req: Request, res: Response) => {
         const userId = req.user!.userId
-        const currentUser = await UsersQueryRepository.findCurrentUser(userId.toString())
+        const currentUser =
+            await UsersQueryRepository.findCurrentUser(userId.toString())
         console.log(currentUser)
 
         if (!currentUser)

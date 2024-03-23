@@ -1,14 +1,16 @@
 import {Router, Response, Request} from "express";
 import {HTTP_STATUSES} from "../models/common";
-import {authMiddleware} from "../middleware/auth-middlewares";
+import {authMiddleware, bearerAuth, checkHeader} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
 import {restrictionValidator} from "../middleware/restrict-number-queries-middleware";
 import {verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {jwtService} from "../domain/jwt-service";
+import {UsersQueryRepository} from "../repositories/user-query-repository";
 
 export const deviceRoute = Router({})
 
 deviceRoute.get('/',
+
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
         try {
@@ -33,6 +35,7 @@ deviceRoute.get('/',
     });
 
 deviceRoute.delete('/:deviceId',
+    checkHeader,
     verifyTokenInCookie, // сессии юзера
     async (req: Request, res: Response) => {
 
@@ -44,14 +47,9 @@ deviceRoute.delete('/:deviceId',
             return;
         }
 
-        const userId = req.user;
-        if (!userId) {
-            res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
-            return;
-        }
-
         const isDeleted =
-            await SessionRepository.deleteSessionByDeviceIdAndUserId(req.params.id, userId.toString())
+            await SessionRepository.
+            deleteSessionByDeviceIdAndUserId(req.params.id, req.user!.userId.toString())
 
         console.log("isDeleted" + isDeleted);
         isDeleted ? res.sendStatus(HTTP_STATUSES.Forbidden_403) :

@@ -39,6 +39,20 @@ export const authMiddleware = (req: Request,
 }
 
 
+export const checkHeader = (req: Request,
+                               res: Response,
+                               next: NextFunction) => {
+
+    const auth = req.headers['authorization']
+    if (!auth) {
+
+        res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+        return
+    }
+
+    return next();
+}
+
 export const bearerAuth = async (req: Request,
                                  res: Response,
                                  next: NextFunction) => {
