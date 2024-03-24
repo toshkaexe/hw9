@@ -10,11 +10,14 @@ import {
     registrationValidation
 } from "../middleware/user-already-exist";
 import {AuthService} from "../domain/auth-service";
-import {logoutMiddleware, logoutTokenInCookie, verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
+import {logoutTokenInCookie,
+    verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
 import {
     restrictNumberQueriesMiddleware,
 } from "../middleware/restrict-number-queries-middleware";
 import {bearerAuth} from "../middleware/auth-middlewares";
+import {BlacklistService} from "../domain/blacklist-service";
+import {jwtService} from "../domain/jwt-service";
 
 
 export const authRoute = Router({})
@@ -132,26 +135,41 @@ authRoute.post('/refresh-token',
     verifyTokenInCookie,
     async (req: Request, res: Response) => {
 
-        //?? откуда user знает про deviceId и ш
+        console.log("in refresh-token endpoint")
+        const oldRefreshToken = req.cookies?.refreshToken;
+
+        const isRefreshTokenInBlackList =
+            await BlacklistService.isInBlacklist(oldRefreshToken);
+
+        const isExpired =
+            await jwtService.validateToken(oldRefreshToken);
+
+        console.log(isExpired)
+
+        if (isRefreshTokenInBlackList ) {
+            console.log("in isRefreshTokenInBlackList ")
+            return res.sendStatus(401)
+        }
+
         const deviceId = req.user!.deviceId
         const userId = req.user!.userId;
 
-
-        //   const userId = req.user
-
         console.log("deviceId: " + deviceId)
         console.log("userId: " + userId)
-        const tokens
+
+        await BlacklistService.addRefreshTokenToBlacklist(oldRefreshToken);
+
+        const updatedRefreshToken
             = await AuthService.updateTokens(
             req.cookies['refreshToken'], userId, deviceId);
         console.log({
-            "token_access=": tokens?.accessToken,
-            "token_refresh=": tokens?.refreshToken
+            "token_access=": updatedRefreshToken?.accessToken,
+            "token_refresh=": updatedRefreshToken?.refreshToken
         });
-        if (!tokens) {
+        if (!updatedRefreshToken) {
             return res.sendStatus(500);
         }
-        const {accessToken, refreshToken} = tokens;
+        const {accessToken, refreshToken} = updatedRefreshToken;
         return res
             .cookie('refreshToken', refreshToken,
                 {httpOnly: true, secure: true})
@@ -174,7 +192,7 @@ authRoute.post('/logout',
             deviceId.toString(),
             userId.toString());
 
-
+        await BlacklistService.addRefreshTokenToBlacklist(req.cookies?.refreshToken);
 
 
         if (!isLogout) return res.sendStatus(401)

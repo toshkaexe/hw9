@@ -2,6 +2,7 @@ import {NextFunction, Response, Request} from "express";
 import {HTTP_STATUSES} from "../models/common";
 import {jwtService} from "../domain/jwt-service";
 import {SessionRepository} from "../repositories/session-repository";
+import {BlacklistService} from "../domain/blacklist-service";
 
 
 export const verifyTokenInCookie = async (req: Request,
@@ -12,14 +13,20 @@ export const verifyTokenInCookie = async (req: Request,
     //if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
     const result = await jwtService.getUserIdAndDeviceId(refreshToken);
+
+    if (!result) {
+        return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+    }
     if (!result?.userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
     try {
         const session =
-            await SessionRepository.findSessionByUserIdAndDeviceId(result!.deviceId, result!.userId.toString())
+            await SessionRepository.findSessionByUserIdAndDeviceId(result!.userId.toString(),
+                result!.deviceId)
 
-        if (!session) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+        console.log("session_info =", session)
+        if (!session) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
         req.user = {userId: result!.userId, deviceId: result!.deviceId}
         next();
@@ -37,6 +44,8 @@ export const logoutTokenInCookie = async (req: Request,
     const refreshToken = req.cookies?.refreshToken;
     console.log("refresh_in_logoutTokenInCookie: " + refreshToken)
     if (!refreshToken) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+
+
 
     const result =
         await jwtService.getUserIdAndDeviceId(refreshToken);

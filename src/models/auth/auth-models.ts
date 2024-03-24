@@ -14,6 +14,6 @@ export type MeViewModel = {
 }
 
 export type TokenDbModel = {
-    accessToken: string
+    refreshToken: string
 }
 

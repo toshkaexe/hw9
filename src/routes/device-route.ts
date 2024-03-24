@@ -3,6 +3,7 @@ import {HTTP_STATUSES} from "../models/common";
 import {checkRefreshTokenFromHeader} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
 import {jwtService} from "../domain/jwt-service";
+import {BlacklistService} from "../domain/blacklist-service";
 
 
 export const deviceRoute = Router({})
@@ -36,6 +37,9 @@ deviceRoute.delete('/:deviceId',
     checkRefreshTokenFromHeader,
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
+
+
+
         const result =
             await jwtService.getUserIdAndDeviceId(refreshToken);
         console.log("result", result);
@@ -59,8 +63,12 @@ deviceRoute.delete('/:deviceId',
                 userId.toString())
 
         console.log("isDeleted" + isDeleted);
-        isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
+        if (isDeleted) {
+            res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+            await BlacklistService.addRefreshTokenToBlacklist(refreshToken);
+        } else {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+        }
         return;
     })
 
