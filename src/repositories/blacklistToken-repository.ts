@@ -16,9 +16,9 @@ export class BlacklistTokenRepository {
 
     static async isInDB(token: string) {
         try {
-
-          return      await blacklistTokens.findOne({accessToken: token});
-
+            const etwasInDB =
+                await blacklistTokens.findOne({refreshToken: token});
+            return !!etwasInDB; // Return true if document exists, false otherwise
         } catch (e) {
             console.log(e)
             return false;

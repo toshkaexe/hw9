@@ -38,6 +38,15 @@ deviceRoute.delete('/:deviceId',
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
 
+        const isRefreshTokenInBlackList =
+            await BlacklistService.isInBlacklist(refreshToken);
+
+        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
+
+        if (isRefreshTokenInBlackList ) {
+            console.log("in isRefreshTokenInBlackList ")
+      //      return res.sendStatus(401)
+        }
 
 
         const result =

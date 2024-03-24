@@ -137,14 +137,19 @@ authRoute.post('/refresh-token',
 
         console.log("in refresh-token endpoint")
         const oldRefreshToken = req.cookies?.refreshToken;
+        console.log("oldRefreshToken ---------------->",oldRefreshToken);
+        const blackLists = await BlacklistService.getAll();
+        console.log("get Blacklist ---------------->",blackLists);
 
         const isRefreshTokenInBlackList =
             await BlacklistService.isInBlacklist(oldRefreshToken);
 
+        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
         const isExpired =
             await jwtService.validateToken(oldRefreshToken);
 
-        console.log(isExpired)
+        console.log("is Expired-------------->",isExpired)
+        console.log("is isRefreshTokenInBlackList-------------->",isRefreshTokenInBlackList)
 
         if (isRefreshTokenInBlackList ) {
             console.log("in isRefreshTokenInBlackList ")
@@ -157,7 +162,7 @@ authRoute.post('/refresh-token',
         console.log("deviceId: " + deviceId)
         console.log("userId: " + userId)
 
-        await BlacklistService.addRefreshTokenToBlacklist(oldRefreshToken);
+
 
         const updatedRefreshToken
             = await AuthService.updateTokens(
@@ -169,7 +174,12 @@ authRoute.post('/refresh-token',
         if (!updatedRefreshToken) {
             return res.sendStatus(500);
         }
+
         const {accessToken, refreshToken} = updatedRefreshToken;
+        await BlacklistService.addRefreshTokenToBlacklist(oldRefreshToken);
+
+        console.log("is gekommen:---------> ", oldRefreshToken)
+        console.log("->>>>>>>>>>><", BlacklistService.getAll());
         return res
             .cookie('refreshToken', refreshToken,
                 {httpOnly: true, secure: true})
@@ -192,9 +202,12 @@ authRoute.post('/logout',
             deviceId.toString(),
             userId.toString());
 
-        await BlacklistService.addRefreshTokenToBlacklist(req.cookies?.refreshToken);
+
 
 
         if (!isLogout) return res.sendStatus(401)
+
+        await BlacklistService.addRefreshTokenToBlacklist(req.cookies?.refreshToken);
+
         return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
     });

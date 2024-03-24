@@ -9,11 +9,7 @@ export const verifyTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
-    console.log("refresh_in verifyToken: " + refreshToken)
-    //if (!refreshToken)   return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
-
     const result = await jwtService.getUserIdAndDeviceId(refreshToken);
-
     if (!result) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
@@ -46,7 +42,6 @@ export const logoutTokenInCookie = async (req: Request,
     if (!refreshToken) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
 
-
     const result =
         await jwtService.getUserIdAndDeviceId(refreshToken);
     if (!result) {
@@ -58,8 +53,6 @@ export const logoutTokenInCookie = async (req: Request,
 
     console.log("result_logoutTokenInCookie_device_id = ", deviceId);
     console.log("result_logoutTokenInCookie_user_id = ", userId);
-
-
     req.user = {userId: result!.userId, deviceId: result!.deviceId}
     next();
     return

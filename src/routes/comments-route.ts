@@ -17,7 +17,7 @@ commentsRoute.put('/:commentId',
     async (req: Request, res: Response) => {
 
         const commentId = req.params.commentId
-        const isUpdated = await CommentsService.UpdateComment(commentId, req.body, req.user!.id)
+        const isUpdated = await CommentsService.UpdateComment(commentId, req.body, req.user!.userId.toString())
 
         if (isUpdated === false) return res.sendStatus(HTTP_STATUSES.Forbidden_403);
         if ( !isUpdated) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
@@ -31,7 +31,8 @@ commentsRoute.delete('/:commentId',
 
     async (req: Request, res: Response) => {
         const commentId = req.params.commentId
-        const isDeleted = await CommentsService.DeleteCommentById(req.params.commentId, req.user!.id)
+        const isDeleted = await
+            CommentsService.DeleteCommentById(req.params.commentId, req.user!.userId.toString())
 
         if (isDeleted === false) return res.sendStatus(HTTP_STATUSES.Forbidden_403);
         if ( !isDeleted) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
