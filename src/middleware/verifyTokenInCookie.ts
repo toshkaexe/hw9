@@ -39,14 +39,20 @@ export const logoutTokenInCookie = async (req: Request,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
     console.log("refresh_in_logoutTokenInCookie: " + refreshToken)
+
+    const isRefreshTokenInBlackList =
+        await BlacklistService.isInBlacklist(refreshToken);
+
+    if (isRefreshTokenInBlackList ) {
+        console.log("in isRefreshTokenInBlackList ")
+        return res.sendStatus(401)
+    }
+
     if (!refreshToken) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
-
-
     const result =
         await jwtService.getUserIdAndDeviceId(refreshToken);
     if (!result) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-
     }
     const deviceId = result?.deviceId;
     const userId = result?.userId.toString();

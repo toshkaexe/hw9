@@ -205,9 +205,11 @@ authRoute.post('/logout',
 
 
 
-        if (!isLogout) return res.sendStatus(401)
+        if (!isLogout) {
+            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
 
+        }
         await BlacklistService.addRefreshTokenToBlacklist(req.cookies?.refreshToken);
-
         return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+      //  return res.sendStatus(401)
     });
