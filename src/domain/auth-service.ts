@@ -14,36 +14,40 @@ import bcrypt from "bcrypt";
 import {LoginInputModel} from "../models/auth/auth-models";
 
 
-
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
-const expiresRefreshTokenTime='20s'; //process.env.REFRESH_TOKEN_TIME;
-export class AuthService  {
+const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
+export class AuthService {
 
     static async logout(deviceId: string, userId: string) {
         console.log("DeviceId in logout", deviceId);
         console.log("UserId in logout", userId);
-        return await
-            SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
+
+
+        return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
+
+
     }
 
     static async login(loginOrEmail: string,
-                password: string,
-                ip: string,
-                deviceName: string) {
+                       password: string,
+                       ip: string,
+                       deviceName: string) {
 
         const user =
             await UsersRepository.findByLoginOrEmail(loginOrEmail)
         if (!user) return null;
 
-        const deviceId=randomUUID();
+        const deviceId = randomUUID();
         //Новый рефреш токен deviceId+userId
         const refreshTokenPayload = {
             deviceId,
-            userId: user._id.toString()}
+            userId: user._id.toString()
+        }
         // accessToken = публичный и нет привязки к девейсу
         const accessTokenPayload = {
             deviceId,
-            userId: user._id.toString()}
+            userId: user._id.toString()
+        }
         const accessToken =
             await jwtService.generateToken(accessTokenPayload, expiresAccessTokenTime)
         const refreshToken =
@@ -71,25 +75,28 @@ export class AuthService  {
     static async updateTokens(oldRefreshToken: string, userId: ObjectId, deviceId: ObjectId) {
         const user = await UsersService.findUserById(userId);
         if (!user) return;
-        const accessToken = await jwtService.generateToken({userId: user.id, deviceId: deviceId.toString()}, expiresAccessTokenTime)
+        const accessToken = await jwtService.generateToken({
+            userId: user.id,
+            deviceId: deviceId.toString()
+        }, expiresAccessTokenTime)
 
-        console.log("access_token_from_updateTokens"+ accessToken);
+        console.log("access_token_from_updateTokens" + accessToken);
 
         const refreshToken =
             await jwtService.generateRefreshToken(
-            {
-                deviceId,
-                userId: user.id
-            }, expiresRefreshTokenTime)
-        console.log("refresh_token_from_updateTokens"+ refreshToken);
+                {
+                    deviceId,
+                    userId: user.id
+                }, expiresRefreshTokenTime)
+        console.log("refresh_token_from_updateTokens" + refreshToken);
         const expDate = await jwtService.getExpirationDate(refreshToken)
         if (!expDate) return;
 
         const lastActiveDate = new Date().toISOString();
         const updatedSession =
             await SessionRepository.updateDeviceSession(expDate,
-            lastActiveDate,
-            user.id, deviceId.toString())
+                lastActiveDate,
+                user.id, deviceId.toString())
         if (!updatedSession) return;
 
         return {accessToken, refreshToken}
@@ -199,7 +206,7 @@ export class AuthService  {
         if (!user) return null
 
         const compare =
-            await bcrypt.compare(body.password,  user.accountData.passwordHash)
+            await bcrypt.compare(body.password, user.accountData.passwordHash)
         if (compare) {
             return user
         }

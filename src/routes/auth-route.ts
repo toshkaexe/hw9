@@ -10,14 +10,17 @@ import {
     registrationValidation
 } from "../middleware/user-already-exist";
 import {AuthService} from "../domain/auth-service";
-import {logoutTokenInCookie,
-    verifyTokenInCookie} from "../middleware/verifyTokenInCookie";
+import {
+    logoutTokenInCookie,
+    verifyTokenInCookie
+} from "../middleware/verifyTokenInCookie";
 import {
     restrictNumberQueriesMiddleware,
 } from "../middleware/restrict-number-queries-middleware";
 import {bearerAuth} from "../middleware/auth-middlewares";
 import {BlacklistService} from "../domain/blacklist-service";
 import {jwtService} from "../domain/jwt-service";
+import {SessionRepository} from "../repositories/session-repository";
 
 
 export const authRoute = Router({})
@@ -137,21 +140,21 @@ authRoute.post('/refresh-token',
 
         console.log("in refresh-token endpoint")
         const oldRefreshToken = req.cookies?.refreshToken;
-        console.log("oldRefreshToken ---------------->",oldRefreshToken);
+        console.log("oldRefreshToken ---------------->", oldRefreshToken);
         const blackLists = await BlacklistService.getAll();
-        console.log("get Blacklist ---------------->",blackLists);
+        console.log("get Blacklist ---------------->", blackLists);
 
         const isRefreshTokenInBlackList =
             await BlacklistService.isInBlacklist(oldRefreshToken);
 
-        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
+        console.log("isRefreshTokenInBlackList ---------------->", isRefreshTokenInBlackList);
         const isExpired =
             await jwtService.validateToken(oldRefreshToken);
 
-        console.log("is Expired-------------->",isExpired)
-        console.log("is isRefreshTokenInBlackList-------------->",isRefreshTokenInBlackList)
+        console.log("is Expired-------------->", isExpired)
+        console.log("is isRefreshTokenInBlackList-------------->", isRefreshTokenInBlackList)
 
-        if (isRefreshTokenInBlackList ) {
+        if (isRefreshTokenInBlackList) {
             console.log("in isRefreshTokenInBlackList ")
             return res.sendStatus(401)
         }
@@ -161,7 +164,6 @@ authRoute.post('/refresh-token',
 
         console.log("deviceId: " + deviceId)
         console.log("userId: " + userId)
-
 
 
         const updatedRefreshToken
@@ -192,24 +194,37 @@ authRoute.post('/logout',
 
     logoutTokenInCookie,
     async (req: Request, res: Response) => {
+        const refreshToken = req.cookies?.refreshToken;
+        console.log("refresh_in_logoutTokenInCookie: " + refreshToken)
+
+        const isRefreshTokenInBlackList =
+            await BlacklistService.isInBlacklist(refreshToken);
+
+
         const deviceId = req.user!.deviceId
         const userId = req.user!.userId
 
         console.log("deviceId_logout", deviceId)
         console.log("userId_logout", userId)
 
-        const isLogout = await AuthService.logout(
+
+        const session =
+            await SessionRepository.findSessionByUserIdAndDeviceId(
+                userId.toString(), deviceId.toString());
+        if (!session) {
+            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        }
+
+        const isDeletedSession
+            = await AuthService.logout(
             deviceId.toString(),
             userId.toString());
 
-
-
-
-        if (!isLogout) {
-            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-
-        }
         await BlacklistService.addRefreshTokenToBlacklist(req.cookies?.refreshToken);
-        return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-      //  return res.sendStatus(401)
+
+        if (!isDeletedSession) {
+            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        }
+
+        return res.sendStatus(204)
     });

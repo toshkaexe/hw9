@@ -13,6 +13,15 @@ deviceRoute.get('/',
 
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
+        const isRefreshTokenInBlackList =
+            await BlacklistService.isInBlacklist(refreshToken);
+
+        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
+
+        if (isRefreshTokenInBlackList ) {
+            console.log("in isRefreshTokenInBlackList ")
+            //      return res.sendStatus(401)
+        }
         try {
             let userId = await jwtService.userfromToken(refreshToken);
 
@@ -91,7 +100,7 @@ deviceRoute.delete('/',
         const deviceId = result?.deviceId;
 
         const isDeleted = await
-            SessionRepository.deleteAllRemoteSessionsExceptCurrrentSession(userId!,deviceId);
+            SessionRepository.deleteAllRemoteSessionsExceptCurrentSession(userId!,deviceId);
 
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)

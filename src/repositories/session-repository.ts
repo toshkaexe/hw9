@@ -40,11 +40,11 @@ export class SessionRepository {
         console.log("inDeleteRemote_Session_deviceId", deviceId)
         console.log("inDeleteRemote_Session_userId", userId);
         try {
-            const res =
+            const reslt =
                 await deviceCollection.deleteOne(
                     {deviceId: deviceId, userId: userId});
-            console.log("delete_res=", res)
-            return true;
+            console.log("delete_res=", reslt)
+            return reslt;
         } catch (e) {
             console.log({"error_by_deleting_session_by_device_id": e})
             return false;
@@ -83,7 +83,7 @@ export class SessionRepository {
         }
     }
 
-    static async deleteAllRemoteSessionsExceptCurrrentSession(
+    static async deleteAllRemoteSessionsExceptCurrentSession(
         userId: string, deviceId: string
     ) {
         try {
