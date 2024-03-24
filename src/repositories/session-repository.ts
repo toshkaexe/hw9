@@ -83,6 +83,22 @@ export class SessionRepository {
         }
     }
 
+    static async deleteAllRemoteSessionsExceptCurrrentSession(
+        userId: string, deviceId: string
+    ) {
+        try {
+
+            const currentSession = await
+                deviceCollection.findOne({deviceId: deviceId, userId: userId});
+
+
+            return await deviceCollection.deleteMany({_id: {$ne: currentSession!._id}});
+
+        } catch (e) {
+            return false;
+        }
+    }
+
     static async getUserBySessionID(sessionID: string) {
         const user =
             await deviceCollection.findOne({deviceId: sessionID});

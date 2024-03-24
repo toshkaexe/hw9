@@ -4,6 +4,7 @@ import {checkRefreshTokenFromHeader} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
 import {jwtService} from "../domain/jwt-service";
 import {BlacklistService} from "../domain/blacklist-service";
+import {deviceCollection} from "../db/db";
 
 
 export const deviceRoute = Router({})
@@ -84,7 +85,14 @@ deviceRoute.delete('/:deviceId',
 deviceRoute.delete('/',
     checkRefreshTokenFromHeader,
     async (req: Request, res: Response) => {
-        const isDeleted = await SessionRepository.deleteAllRemoteSessions()
+        const refreshToken = req.cookies?.refreshToken;
+        const result = await jwtService.getUserIdAndDeviceId(refreshToken);
+        const userId = result?.userId.toString();
+        const deviceId = result?.deviceId;
+
+        const isDeleted = await
+            SessionRepository.deleteAllRemoteSessionsExceptCurrrentSession(userId!,deviceId);
+
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     })
