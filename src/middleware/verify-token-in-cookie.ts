@@ -21,7 +21,6 @@ export const verifyTokenInCookie = async (req: Request,
             await SessionRepository.findSessionByUserIdAndDeviceId(result!.userId.toString(),
                 result!.deviceId)
 
-        console.log("session_info =", session)
         if (!session) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
 
         req.user = {userId: result!.userId, deviceId: result!.deviceId}
@@ -38,13 +37,10 @@ export const logoutTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
-    console.log("refresh_in_logoutTokenInCookie: " + refreshToken)
-
     const isRefreshTokenInBlackList =
         await BlacklistService.isInBlacklist(refreshToken);
 
     if (isRefreshTokenInBlackList ) {
-        console.log("in isRefreshTokenInBlackList ")
         return res.sendStatus(401)
     }
 
@@ -54,18 +50,8 @@ export const logoutTokenInCookie = async (req: Request,
     if (!result) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }
-    const deviceId = result?.deviceId;
-    const userId = result?.userId.toString();
-
-    console.log("result_logoutTokenInCookie_device_id = ", deviceId);
-    console.log("result_logoutTokenInCookie_user_id = ", userId);
     req.user = {userId: result!.userId, deviceId: result!.deviceId}
     next();
     return
 
 };
-
-// название иземенить
-export const logoutMiddleware = () => [
-    verifyTokenInCookie
-];

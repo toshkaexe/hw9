@@ -19,13 +19,7 @@ const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
 export class AuthService {
 
     static async logout(deviceId: string, userId: string) {
-        console.log("DeviceId in logout", deviceId);
-        console.log("UserId in logout", userId);
-
-
         return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
-
-
     }
 
     static async login(loginOrEmail: string,
@@ -43,7 +37,7 @@ export class AuthService {
             deviceId,
             userId: user._id.toString()
         }
-        // accessToken = публичный и нет привязки к девейсу
+
         const accessTokenPayload = {
             deviceId,
             userId: user._id.toString()
@@ -78,9 +72,8 @@ export class AuthService {
         const accessToken = await jwtService.generateToken({
             userId: user.id,
             deviceId: deviceId.toString()
-        }, expiresAccessTokenTime)
+        }, expiresAccessTokenTime);
 
-        console.log("access_token_from_updateTokens" + accessToken);
 
         const refreshToken =
             await jwtService.generateRefreshToken(
@@ -88,7 +81,7 @@ export class AuthService {
                     deviceId,
                     userId: user.id
                 }, expiresRefreshTokenTime)
-        console.log("refresh_token_from_updateTokens" + refreshToken);
+
         const expDate = await jwtService.getExpirationDate(refreshToken)
         if (!expDate) return;
 
@@ -104,7 +97,6 @@ export class AuthService {
 
 
     static async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
-
         const exampleRequest: ApiRequestModel = {
             ip: data.ip!,
             url: data.url,

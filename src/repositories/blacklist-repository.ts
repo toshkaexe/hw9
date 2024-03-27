@@ -1,7 +1,7 @@
-import {blacklistTokens, deviceCollection} from "../db/db";
+import {blacklistTokens} from "../db/db";
 
 
-export class BlacklistTokenRepository {
+export class BlacklistRepository {
 
     static async addRefreshTokenToBlackList(token: string) {
         try {
@@ -16,9 +16,9 @@ export class BlacklistTokenRepository {
 
     static async isInDB(token: string) {
         try {
-            const etwasInDB =
+            const somethingInDB =
                 await blacklistTokens.findOne({refreshToken: token});
-            return !!etwasInDB; // Return true if document exists, false otherwise
+            return !!somethingInDB; // Return true if document exists, false otherwise
         } catch (e) {
             console.log(e)
             return false;

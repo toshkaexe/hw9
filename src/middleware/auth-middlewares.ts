@@ -43,12 +43,7 @@ export const checkRefreshTokenFromHeader = (req: Request,
                                             res: Response,
                                             next: NextFunction) => {
 
-    const auth = req.headers['authorization']
-
     const refreshToken = req.cookies?.refreshToken;
-
-
-    console.log("refreshToken = ", refreshToken);
     if (!refreshToken) {
         res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
         return

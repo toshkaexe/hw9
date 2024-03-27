@@ -1,4 +1,4 @@
-import {BlacklistTokenRepository} from "../repositories/blacklistToken-repository";
+import {BlacklistRepository} from "../repositories/blacklist-repository";
 import {blacklistTokens, blogsCollection, deviceCollection} from "../db/db";
 
 export class BlacklistService {
@@ -18,7 +18,7 @@ export class BlacklistService {
     static async addRefreshTokenToBlacklist(token: string) {
 
         const addedToken =
-            await BlacklistTokenRepository.addRefreshTokenToBlackList(token);
+            await BlacklistRepository.addRefreshTokenToBlackList(token);
         if (addedToken) {
             return addedToken
         } else {
@@ -30,7 +30,7 @@ export class BlacklistService {
     static async isInBlacklist(token: string) {
 
         const tokenInBlacklist =
-            await BlacklistTokenRepository.isInDB(token);
+            await BlacklistRepository.isInDB(token);
         if (tokenInBlacklist) {
             return true
         } else {

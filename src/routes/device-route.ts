@@ -4,8 +4,6 @@ import {checkRefreshTokenFromHeader} from "../middleware/auth-middlewares";
 import {SessionRepository} from "../repositories/session-repository";
 import {jwtService} from "../domain/jwt-service";
 import {BlacklistService} from "../domain/blacklist-service";
-import {deviceCollection} from "../db/db";
-
 
 export const deviceRoute = Router({})
 
@@ -13,15 +11,7 @@ deviceRoute.get('/',
 
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
-        const isRefreshTokenInBlackList =
-            await BlacklistService.isInBlacklist(refreshToken);
 
-        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
-
-        if (isRefreshTokenInBlackList ) {
-            console.log("in isRefreshTokenInBlackList ")
-            //      return res.sendStatus(401)
-        }
         try {
             let userId = await jwtService.userfromToken(refreshToken);
 
@@ -48,17 +38,6 @@ deviceRoute.delete('/:deviceId',
     async (req: Request, res: Response) => {
         const refreshToken = req.cookies?.refreshToken;
 
-        const isRefreshTokenInBlackList =
-            await BlacklistService.isInBlacklist(refreshToken);
-
-        console.log("isRefreshTokenInBlackList ---------------->",isRefreshTokenInBlackList);
-
-        if (isRefreshTokenInBlackList ) {
-            console.log("in isRefreshTokenInBlackList ")
-      //      return res.sendStatus(401)
-        }
-
-
         const result =
             await jwtService.getUserIdAndDeviceId(refreshToken);
         console.log("result", result);
@@ -67,7 +46,6 @@ deviceRoute.delete('/:deviceId',
         const session =
             await SessionRepository.getSessionByIdExist(req.params.deviceId);
 
-        console.log("isDeviceExist: ", session)
         if (session == false) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
             return;
@@ -81,7 +59,6 @@ deviceRoute.delete('/:deviceId',
             await SessionRepository.deleteSessionByDeviceIdAndUserId(req.params.deviceId,
                 userId.toString())
 
-        console.log("isDeleted" + isDeleted);
         if (isDeleted) {
             res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
             await BlacklistService.addRefreshTokenToBlacklist(refreshToken);
@@ -100,7 +77,7 @@ deviceRoute.delete('/',
         const deviceId = result?.deviceId;
 
         const isDeleted = await
-            SessionRepository.deleteAllRemoteSessionsExceptCurrentSession(userId!,deviceId);
+            SessionRepository.deleteAllRemoteSessionsExceptCurrentSession(userId!, deviceId);
 
         isDeleted ? res.sendStatus(HTTP_STATUSES.NO_CONTENT_204) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)

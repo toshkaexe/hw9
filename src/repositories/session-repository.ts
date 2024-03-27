@@ -37,14 +37,13 @@ export class SessionRepository {
     }
 
     static async deleteSessionByDeviceIdAndUserId(deviceId: string, userId: string) {
-        console.log("inDeleteRemote_Session_deviceId", deviceId)
-        console.log("inDeleteRemote_Session_userId", userId);
+
         try {
-            const reslt =
-                await deviceCollection.deleteOne(
-                    {deviceId: deviceId, userId: userId});
-            console.log("delete_res=", reslt)
-            return reslt;
+            return await deviceCollection.deleteOne(
+                {
+                    deviceId: deviceId,
+                    userId: userId
+                });
         } catch (e) {
             console.log({"error_by_deleting_session_by_device_id": e})
             return false;
@@ -56,30 +55,17 @@ export class SessionRepository {
         userId: string,
         deviceId: string
     ) {
-        console.log("device_id_ in findSessionByUserIdAndDeviceId", deviceId)
-        console.log("user_id_ in findSessionByUserIdAndDeviceId", userId);
         try {
             const res =
-
                 await deviceCollection
-                    .findOne({userId: userId, deviceId: deviceId}
-                    );
-
-            console.log("res_in_findSessionByUserIdAndDeviceId", res);
+                    .findOne({
+                            userId: userId,
+                            deviceId: deviceId
+                        });
             return res;
         } catch (e) {
             console.log({'error_message_in_findSessionByUserIdAndDeviceId': e})
             return null;
-        }
-    }
-
-    static async deleteAllRemoteSessions() {
-        try {
-            const res =
-                await deviceCollection.deleteMany({});
-            return true;
-        } catch (e) {
-            return false;
         }
     }
 
@@ -88,22 +74,12 @@ export class SessionRepository {
     ) {
         try {
 
-            const currentSession = await
-                deviceCollection.findOne({deviceId: deviceId, userId: userId});
-
-
+            const currentSession =
+                await deviceCollection.findOne({deviceId: deviceId, userId: userId});
             return await deviceCollection.deleteMany({_id: {$ne: currentSession!._id}});
-
         } catch (e) {
             return false;
         }
-    }
-
-    static async getUserBySessionID(sessionID: string) {
-        const user =
-            await deviceCollection.findOne({deviceId: sessionID});
-        if (!user) return null;
-        return user;
     }
 
     static async getSessionByIdExist(deviceId: string) {
