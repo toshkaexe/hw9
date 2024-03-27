@@ -50,15 +50,6 @@ authRoute.post('/registration-confirmation',
     }
 )
 
-async function sendApiRequest(req: Request, res: Response) {
-    const apiReq = {
-        ip: req.ip,
-        url: req.baseUrl || req.originalUrl,
-        date: new Date()
-    }
-    await AuthService.saveApiRequest(apiReq);
-}
-
 authRoute.post('/registration',
     restrictNumberQueriesMiddleware,
     registrationValidation(),
@@ -158,7 +149,6 @@ authRoute.post('/refresh-token',
 authRoute.post('/logout',
     logoutTokenInCookie,
     async (req: Request, res: Response) => {
-        const refreshToken = req.cookies?.refreshToken;
 
         const deviceId = req.user!.deviceId
         const userId = req.user!.userId
