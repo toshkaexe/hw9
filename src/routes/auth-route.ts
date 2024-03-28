@@ -131,7 +131,8 @@ authRoute.post('/refresh-token',
 
         const updatedRefreshToken
             = await AuthService.updateTokens(
-            req.cookies['refreshToken'], userId, deviceId);
+            req.cookies['refreshToken'], userId, deviceId
+        );
         if (!updatedRefreshToken) {
             return res.sendStatus(HTTP_STATUSES.InternalServerError_500);
         }

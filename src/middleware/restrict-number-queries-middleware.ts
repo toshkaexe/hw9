@@ -8,12 +8,12 @@ export const restrictNumberQueriesMiddleware = async (req: Request,
                                                       next: NextFunction) => {
     try {
         const date = new Date();
-        const apiReq = {ip:  req.ip, url: req.originalUrl, date: date }
+        const apiReq = {ip: req.ip, url: req.originalUrl, date: date}
         //save in DB
         await AuthService.saveApiRequest(apiReq);
         const currentDateMinus10Seconds = new Date(Date.now() - 10 * 1000);
         const filter = {
-            url:  req.originalUrl,
+            url: req.originalUrl,
             ip: req.ip,
             date: {$gte: currentDateMinus10Seconds}
         };
