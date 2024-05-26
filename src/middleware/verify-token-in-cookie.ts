@@ -10,9 +10,7 @@ export const verifyTokenInCookie = async (req: Request,
                                           next: NextFunction) => {
     const refreshToken = req.cookies?.refreshToken;
     const result = await jwtService.getUserIdAndDeviceId(refreshToken);
-    if (!result) {
-        return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-    }
+
     if (!result?.userId) {
         return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
     }

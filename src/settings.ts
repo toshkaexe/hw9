@@ -11,7 +11,7 @@ import {emailRoute} from "./routes/emailRoute";
 import {cookie} from "express-validator";
 import cookieParser from "cookie-parser";
 import {deviceRoute} from "./routes/device-route";
-import {apiRequestsCollection} from "./db/db";
+
 
 
 export const RouterPaths = {
@@ -33,7 +33,7 @@ app.use(express.json())
 
 app.use(bodyParser.json())
 app.get('/', (req, res) => {
-    res.send("Homework 9")
+    res.send("Homework 10")
 })
 app.get('/env', (req, res) => {
     res.send({

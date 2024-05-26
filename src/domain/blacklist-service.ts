@@ -1,5 +1,6 @@
 import {BlacklistRepository} from "../repositories/blacklist-repository";
-import {blacklistTokens, blogsCollection, deviceCollection} from "../db/db";
+import {BlacklistTokensModel} from "../db/schemas";
+
 
 export class BlacklistService {
 
@@ -7,7 +8,7 @@ export class BlacklistService {
     static async getAll() {
         try {
 
-            return await blacklistTokens.find({}).toArray();
+            return await BlacklistTokensModel.find({});
 
         } catch (e) {
             return false;

@@ -1,14 +1,17 @@
-import {DeviceAuthSessionDb, ApiRequestModel, apiRequestMapper} from "../models/devices/devices-models";
-import {apiRequestsCollection, blogsCollection, deviceCollection} from "../db/db";
+import {DeviceAuthSessionDb, ApiRequestModelDate, apiRequestMapper} from "../models/devices/devices-models";
+import {ApiRequestModel} from "../db/schemas";
+
 
 
 export class RequestApiRepository {
-    static async saveCollectionToDB(apiRequest: ApiRequestModel) {
+    static async saveCollectionToDB(apiRequest: ApiRequestModelDate) {
 
         try {
-            const res = await apiRequestsCollection.insertOne(apiRequest)
-             res.insertedId.toString()
-            return apiRequestMapper({_id:res.insertedId, ...apiRequest})
+
+
+            const res = await ApiRequestModel.create(apiRequest)
+           return  res;
+         //   return apiRequestMapper({_id: res.toString(), ...apiRequest})
 
         } catch (e) {
             return null
@@ -16,6 +19,7 @@ export class RequestApiRepository {
     }
 
     static async deleteAll() {
-        return   await apiRequestsCollection.deleteMany({})
+          await ApiRequestModel.deleteMany({})
+        return;
     }
 }

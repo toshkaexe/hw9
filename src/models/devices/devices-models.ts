@@ -26,7 +26,7 @@ export type OutputSessionModel = {
     title: string
 }
 // храним все случаи обращения к api
-export type ApiRequestModel = {
+export type ApiRequestModelDate = {
     ip: string
     url: string
     date: Date
@@ -39,7 +39,7 @@ export type OutputApiRequestModel = {
     url: string
     date: Date
 }
-export const apiRequestMapper = (apiRequest: WithId<ApiRequestModel>): OutputApiRequestModel => {
+export const apiRequestMapper = (apiRequest: WithId<ApiRequestModelDate>): OutputApiRequestModel => {
     return {
         id: apiRequest._id.toString(),
         ip: apiRequest.ip,

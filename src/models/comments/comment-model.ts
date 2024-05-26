@@ -1,5 +1,11 @@
 import {WithId} from "mongodb";
 
+
+
+
+
+
+
 export type CommentatorInfo = {
     userId: string
     userLogin: string
@@ -19,13 +25,13 @@ export type CommentWidthPostModel = {
     createdAt: string
 }
 
-export type CommentOutputModel = {
+export type CommentView = {
     id: string
     content: string
     commentatorInfo: CommentatorInfo
     createdAt: string
 }
-export const commentMapper = (comment: WithId<CommentDbModel>): CommentOutputModel => {
+export const commentMapper = (comment: WithId<CommentDbModel>): CommentView => {
     return {
         id: comment._id.toString(),
         content: comment.content,

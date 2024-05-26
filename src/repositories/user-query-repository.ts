@@ -1,6 +1,6 @@
-import {usersCollection} from "../db/db";
 import {UserDbModel, userMapper, UserViewModel} from "../models/users/users-models"
 import {ObjectId, WithId} from "mongodb";
+import {UserModel} from "../db/schemas";
 
 
 export class UsersQueryRepository  {
@@ -28,15 +28,14 @@ export class UsersQueryRepository  {
         if (sortDirection === "asc") {
             sortOptions[sortBy] = 1
         }
-        const totalCount = await usersCollection.countDocuments(filter)
+        const totalCount = await UserModel.countDocuments(filter)
         const pagesCount = Math.ceil(totalCount / +pageSize)
         const scip = (+page - 1) * +pageSize
-        const users = await usersCollection
+        const users = await UserModel
             .find(filter)
             .sort(sortOptions)
             .skip(scip)
-            .limit(+pageSize)
-            .toArray()
+            .limit(+pageSize);
 
         return {
             pagesCount,
@@ -49,7 +48,7 @@ export class UsersQueryRepository  {
 
     static async findCurrentUser(userId: string): Promise<UserViewModel | null> {
         if (!ObjectId.isValid(userId)) return null
-        const currentUser: WithId<UserDbModel> | null = await usersCollection.findOne({_id: new ObjectId(userId)})
+        const currentUser: WithId<UserDbModel> | null = await UserModel.findOne({_id: new ObjectId(userId)})
         return currentUser ? userMapper(currentUser) : null
     }
 }

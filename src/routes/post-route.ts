@@ -19,7 +19,7 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {OutputBlogModel} from "../models/blogs/blog-models";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
-import {CommentOutputModel} from "../models/comments/comment-model";
+import {CommentView} from "../models/comments/comment-model";
 import {validateComments, validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
 import {UsersRepository} from "../repositories/users-repositiory";

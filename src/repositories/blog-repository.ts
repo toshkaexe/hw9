@@ -1,4 +1,3 @@
-import {blogsCollection, db} from "../db/db"
 import {
     BlogDbModel,
     OutputBlogModel,
@@ -6,19 +5,21 @@ import {
 } from "../models/blogs/blog-models";
 import {blogMapper} from "../models/blogs/blog-models";
 import {InsertOneResult, ObjectId} from "mongodb";
+import {BlogModel} from "../db/schemas";
 
 export class BlogRepository {
 
 
     static async createBlog(newBlog: BlogDbModel): Promise<OutputBlogModel> {
-        const result: InsertOneResult<BlogDbModel> = await blogsCollection.insertOne({...newBlog})
+        const result: InsertOneResult<BlogDbModel> =
+            await BlogModel.insertOne({...newBlog})
         return blogMapper({_id: result.insertedId, ...newBlog})
     }
 
     //
     static async updateBlog(id: string, updatedData: UpdateBlogModel): Promise<boolean> {
         try {
-            const blog = await blogsCollection.updateOne({_id: new ObjectId(id)},
+            const blog = await BlogModel.updateOne({_id: new ObjectId(id)},
                 {
                     $set: {
                         name: updatedData.name,
@@ -35,7 +36,7 @@ export class BlogRepository {
 
     static async deleteBlogById(id: string): Promise<boolean> {
         try {
-            const blog = await blogsCollection.deleteOne({_id: new ObjectId(id)})
+            const blog = await BlogModel.deleteOne({_id: new ObjectId(id)})
             return !!blog.deletedCount;
         } catch (err) {
             return false;
@@ -43,14 +44,14 @@ export class BlogRepository {
     }
 
     static async deleteAll() {
-        const result = await blogsCollection.deleteMany({})
+        const result = await BlogModel.deleteMany({})
     }
 
 
     static async getBlogById(id: string): Promise<OutputBlogModel | null> {
         if (id == null) return null;
         try {
-            const blog = await blogsCollection.findOne({_id: new ObjectId(id)});
+            const blog = await BlogModel.findOne({_id: new ObjectId(id)});
             if (!blog) {
                 return null
             }

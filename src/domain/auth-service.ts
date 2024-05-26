@@ -2,7 +2,7 @@ import {UsersRepository} from "../repositories/users-repositiory";
 import {ObjectId} from "mongodb";
 import {randomUUID} from "crypto";
 import {jwtService} from "./jwt-service";
-import {ApiRequestModel, DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
 import {SessionRepository} from "../repositories/session-repository";
 import {UsersService} from "./users-service";
 
@@ -16,19 +16,19 @@ import {LoginInputModel} from "../models/auth/auth-models";
 
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
 const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
-export class AuthService {
 
+const objects: any[] = [];
+const userRepository = new UsersRepository();
+objects.push(userRepository);
+
+
+export class AuthService {
     static async logout(deviceId: string, userId: string) {
         return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
     }
 
-    static async login(loginOrEmail: string,
-                       password: string,
-                       ip: string,
-                       deviceName: string) {
-
-        const user =
-            await UsersRepository.findByLoginOrEmail(loginOrEmail)
+    static async login(loginOrEmail: string, password: string, ip: string, deviceName: string) {
+        const user = await UsersRepository.findByLoginOrEmail(loginOrEmail);
         if (!user) return null;
 
         const deviceId = randomUUID();
@@ -42,6 +42,7 @@ export class AuthService {
             deviceId,
             userId: user._id.toString()
         }
+
         const accessToken =
             await jwtService.generateToken(accessTokenPayload, expiresAccessTokenTime)
         const refreshToken =
@@ -97,7 +98,7 @@ export class AuthService {
 
 
     static async saveApiRequest(data: { date: Date; ip: string | undefined; url: string }) {
-        const exampleRequest: ApiRequestModel = {
+        const exampleRequest: ApiRequestModelDate = {
             ip: data.ip!,
             url: data.url,
             date: data.date

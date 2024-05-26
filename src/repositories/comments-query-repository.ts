@@ -1,13 +1,15 @@
 import {CommentatorInfo, CommentDbModel, commentMapper} from "../models/comments/comment-model";
-import {commentsCollection} from "../db/db";
+
 import {ObjectId, WithId} from "mongodb";
+import {CommentModel} from "../db/schemas";
 
 
 export const commentsQueryRepository = {
 
     async getCommentById(id: string) {
         // if (!ObjectId.isValid(id)) return null // что с тобой не так?
-        const comment: WithId<CommentDbModel> | null = await commentsCollection.findOne(
+        const comment: WithId<CommentDbModel> | null =
+            await CommentModel.findOne(
             {_id: new ObjectId(id)})
         return comment ? commentMapper(comment) : null
     },
@@ -25,15 +27,14 @@ export const commentsQueryRepository = {
         }
         const filter = {postId: id}
 
-        const totalCount = await commentsCollection.countDocuments(filter) // откуда он берет дополнительную единицу?
+        const totalCount = await CommentModel.countDocuments(filter) // откуда он берет дополнительную единицу?
         const pagesCount = Math.ceil(totalCount / +pageSize)
         const scip = (+pageNumber - 1) * +pageSize
-        const comments = await commentsCollection
+        const comments = await CommentModel
             .find(filter)
             .sort(sortOptions)
             .limit(+pageSize)
-            .skip(scip)
-            .toArray();
+            .skip(scip);
 console.log(comments)
         return comments ? {
             pagesCount,

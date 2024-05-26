@@ -1,7 +1,8 @@
 import {Paginator} from "../models/posts/posts-models";
 import {PostDbModel, postMapper, OutputPostModel} from "../models/posts/posts-models";
-import {postsCollection} from "../db/db";
+
 import {ObjectId, WithId} from "mongodb";
+import {PostModel} from "../db/schemas";
 
 export class PostsQueryRepository {
 
@@ -16,15 +17,15 @@ export class PostsQueryRepository {
         if (sortDirection === "asc") {
             sortOptions[sortBy] = 1
         }
-        const totalCount = await postsCollection.countDocuments({})
+        const totalCount = await PostModel.countDocuments({})
         const pagesCount = Math.ceil(totalCount / pageSize)
         const scip = (page - 1) * pageSize
-        const post = await postsCollection
+        const post = await PostModel
             .find({})
             .sort(sortOptions)
             .skip(scip)
-            .limit(pageSize)
-            .toArray()
+            .limit(pageSize);
+
         console.log(totalCount, 'its totalCount')
 
         return {
@@ -38,7 +39,7 @@ export class PostsQueryRepository {
 
     static async findPostById(id: string): Promise<OutputPostModel | null> {
         if (!ObjectId.isValid(id)) return null
-        const post: WithId<PostDbModel> | null = await postsCollection.findOne({_id: new ObjectId(id)})
+        const post: WithId<PostDbModel> | null = await PostModel.findOne({_id: new ObjectId(id)})
         return post ? postMapper(post) : null
     }
 

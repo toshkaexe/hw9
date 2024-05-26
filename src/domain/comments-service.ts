@@ -1,4 +1,4 @@
-import {CommentDbModel, CommentOutputModel} from "../models/comments/comment-model";
+import {CommentDbModel, CommentView} from "../models/comments/comment-model";
 import {commentsRepository} from "../repositories/comments-repository";
 import {OutputPostModel} from "../models/posts/posts-models";
 import {PostsQueryRepository} from "../repositories/posts-query-repository";
@@ -8,7 +8,7 @@ export class CommentsService {
 
     static async CreateComment(
         userData: {userId: string, userLogin: string}, postId: string, content: string):
-        Promise<CommentOutputModel | null> {
+        Promise<CommentView | null> {
 
         const post: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
         console.log(post, 'its post')

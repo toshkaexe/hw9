@@ -1,13 +1,13 @@
 import {DeviceAuthSessionDb, sessionDbMapper} from "../models/devices/devices-models";
-import {deviceCollection} from "../db/db";
+import {DeviceModel} from "../db/schemas";
 
 
 export class SessionRepository {
 
     static async creatDeviceSession(sessionData: DeviceAuthSessionDb) {
         try {
-            const res = await deviceCollection.insertOne(sessionData)
-            return res.insertedId.toString()
+            const res = await DeviceModel.create(sessionData)
+            return res.toString()
         } catch (e) {
             console.log(e)
             return null
@@ -17,7 +17,7 @@ export class SessionRepository {
     static async updateDeviceSession(expDate: string, lastActiveDate: string, userId: string, deviceId: string) {
         try {
             const res =
-                await deviceCollection.updateOne(
+                await DeviceModel.updateOne(
                     {
                         $and: [
                             {"userId": userId},
@@ -39,7 +39,7 @@ export class SessionRepository {
     static async deleteSessionByDeviceIdAndUserId(deviceId: string, userId: string) {
 
         try {
-            return await deviceCollection.deleteOne(
+            return await DeviceModel.deleteOne(
                 {
                     deviceId: deviceId,
                     userId: userId
@@ -57,7 +57,7 @@ export class SessionRepository {
     ) {
         try {
             const res =
-                await deviceCollection
+                await DeviceModel
                     .findOne({
                             userId: userId,
                             deviceId: deviceId
@@ -75,8 +75,8 @@ export class SessionRepository {
         try {
 
             const currentSession =
-                await deviceCollection.findOne({deviceId: deviceId, userId: userId});
-            return await deviceCollection.deleteMany({_id: {$ne: currentSession!._id}});
+                await DeviceModel.findOne({deviceId: deviceId, userId: userId});
+            return await DeviceModel.deleteMany({_id: {$ne: currentSession!._id}});
         } catch (e) {
             return false;
         }
@@ -84,14 +84,14 @@ export class SessionRepository {
 
     static async getSessionByIdExist(deviceId: string) {
         const session = await
-            deviceCollection.findOne({deviceId: deviceId});
+            DeviceModel.findOne({deviceId: deviceId});
         if (!session) return false;
         return session;
     }
 
 
     static async getAllSessionByUser(userId: string) {
-        const user = await deviceCollection.find({userId: userId}).toArray();
+        const user = await DeviceModel.find({userId: userId});
         if (!user) return null;
 
         return user.map(sessionDbMapper);

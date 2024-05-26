@@ -1,7 +1,7 @@
 import {Router, Request, Response} from 'express';
 import {HTTP_STATUSES} from "../models/common";
 
-import {CommentOutputModel} from "../models/comments/comment-model";
+import {CommentView} from "../models/comments/comment-model";
 
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {bearerAuth} from "../middleware/auth-middlewares";
@@ -46,7 +46,7 @@ commentsRoute.delete('/:commentId',
 commentsRoute.get('/:commentId',
     // authMiddleware,
     async (req: Request, res: Response) => {
-        const foundComment: CommentOutputModel | null = await commentsQueryRepository.getCommentById(req.params.commentId)
+        const foundComment: CommentView | null = await commentsQueryRepository.getCommentById(req.params.commentId)
         foundComment ? res.status(HTTP_STATUSES.OK_200).send(foundComment) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     }

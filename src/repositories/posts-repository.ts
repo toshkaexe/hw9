@@ -1,5 +1,3 @@
-import { postsCollection} from "../db/db"
-
 import {CreatePostModel, UpdatePostModel} from "../models/posts/posts-models";
 
 import {ObjectId, WithId} from "mongodb";
@@ -7,6 +5,7 @@ import {ObjectId, WithId} from "mongodb";
 import {BlogRepository} from "./blog-repository";
 import {inflate} from "zlib";
 import {postMapper} from "../models/posts/posts-models";
+import {PostModel} from "../db/schemas";
 
 export class PostsRepository {
     static async createPost(data: CreatePostModel) {
@@ -19,8 +18,8 @@ export class PostsRepository {
                 blogName: blog.name,
                 createdAt: createdAt.toISOString()
             }
-            const result = await postsCollection.insertOne(newPost);
-            return result.insertedId.toString();
+            const result = await PostModel.create(newPost);
+            return result.toString();
         } else {
             return null;
         }
@@ -34,7 +33,7 @@ export class PostsRepository {
         const blog = await BlogRepository.getBlogById(body.blogId);
         if (!blog){return  false;}
         const result =
-            await postsCollection.updateOne({_id: new ObjectId(postId)},
+            await PostModel.updateOne({_id: new ObjectId(postId)},
                 {
                     $set: {
                         title: body.title,
@@ -48,7 +47,7 @@ export class PostsRepository {
     }
 
     static async getAllPosts() {
-        const posts = await postsCollection.find({}).toArray();
+        const posts = await PostModel.find({});
         return posts.map(postMapper);
 
     }
@@ -56,7 +55,7 @@ export class PostsRepository {
     static async getPostById(id: string) {
         try {
             const post =
-                await postsCollection.findOne({_id: new ObjectId(id)});
+                await PostModel.findOne({_id: new ObjectId(id)});
             if (!post) {
                 return null;
             }
@@ -76,7 +75,7 @@ export class PostsRepository {
 
         try {
             const result =
-                await postsCollection.deleteOne({_id: new ObjectId(id)});
+                await PostModel.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch (err) {
             return false
@@ -84,6 +83,6 @@ export class PostsRepository {
     }
 
     static async deleteAll(){
-        const result = await postsCollection.deleteMany({})
+        const result = await PostModel.deleteMany({})
     }
 }
