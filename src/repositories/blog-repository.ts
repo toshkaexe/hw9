@@ -9,25 +9,26 @@ import {BlogModel} from "../db/schemas";
 
 export class BlogRepository {
 
-
-    static async createBlog(newBlog: BlogDbModel): Promise<OutputBlogModel> {
-        const result: InsertOneResult<BlogDbModel> =
-            await BlogModel.insertOne({...newBlog})
-        return blogMapper({_id: result.insertedId, ...newBlog})
+    static async createBlog(newBlog: BlogDbModel) {
+        const result = new BlogModel(newBlog)
+        await result.save()
+        return result._id;
     }
 
-    //
-    static async updateBlog(id: string, updatedData: UpdateBlogModel): Promise<boolean> {
+    static async updateBlog(id: string, blog: UpdateBlogModel): Promise<boolean> {
         try {
-            const blog = await BlogModel.updateOne({_id: new ObjectId(id)},
-                {
-                    $set: {
-                        name: updatedData.name,
-                        description: updatedData.description,
-                        websiteUrl: updatedData.websiteUrl
-                    }
-                })
-            return !!blog.matchedCount;
+            const updatedBlog = await BlogModel.findById(id)
+
+            if (!updatedBlog) return false
+
+            updatedBlog.name = blog.name;
+            updatedBlog.description = blog.description;
+            updatedBlog.websiteUrl = blog.websiteUrl;
+
+            const result = await updatedBlog.save();
+
+
+            return true;
         } catch (err) {
             return false;
         }
@@ -36,8 +37,12 @@ export class BlogRepository {
 
     static async deleteBlogById(id: string): Promise<boolean> {
         try {
-            const blog = await BlogModel.deleteOne({_id: new ObjectId(id)})
-            return !!blog.deletedCount;
+            const blog = await BlogModel.findOne({_id: new ObjectId(id)})
+            if (!blog) return  false;
+
+            await blog.deleteOne()
+
+            return true
         } catch (err) {
             return false;
         }

@@ -6,27 +6,6 @@ import {commentsQueryRepository} from "../repositories/comments-query-repository
 
 export class CommentsService {
 
-    static async CreateComment(
-        userData: {userId: string, userLogin: string}, postId: string, content: string):
-        Promise<CommentView | null> {
-
-        const post: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
-        console.log(post, 'its post')
-
-        if (!post) return null
-        const newComment: CommentDbModel = {
-            postId: post.id,
-            content: content,
-            commentatorInfo: {
-                userId: userData.userId,
-                userLogin: userData.userLogin
-            },
-            createdAt: new Date().toISOString()
-        }
-
-        return await commentsRepository.createComment(newComment)
-    }
-
     static async UpdateComment(id: string, body: CommentDbModel, userId: string) {
      const targetComment = await commentsQueryRepository.getCommentById(id)
         if (!targetComment) return null;

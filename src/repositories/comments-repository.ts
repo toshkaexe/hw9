@@ -1,14 +1,18 @@
 import {CommentDbModel, commentMapper, CommentView} from "../models/comments/comment-model";
 import {InsertOneResult, ObjectId} from "mongodb";
-import {CommentModel} from "../db/schemas";
+import {BlogModel, CommentModel} from "../db/schemas";
 
 
 export class commentsRepository  {
 
-    static async createComment(newComment: CommentDbModel): Promise<CommentView> {
-        const result: InsertOneResult<CommentDbModel> =
-            await CommentModel.insertOne({...newComment})
-        return commentMapper({_id: result.insertedId, ...newComment})
+    static async createComment(newComment: CommentDbModel) {
+
+        const result = new CommentModel(newComment)
+        await result.save()
+        return result._id;
+        // const result: InsertOneResult<CommentDbModel> =
+        //     await CommentModel.insertOne({...newComment})
+        // return commentMapper({_id: result.insertedId, ...newComment})
     }
 
     static async updateComment(id: string, body: any): Promise<any> {

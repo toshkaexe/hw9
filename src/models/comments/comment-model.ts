@@ -1,11 +1,5 @@
 import {WithId} from "mongodb";
 
-
-
-
-
-
-
 export type CommentatorInfo = {
     userId: string
     userLogin: string

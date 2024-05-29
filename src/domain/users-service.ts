@@ -16,7 +16,7 @@ export class UsersService {
         return userMapper(user)
 
     }
-   static async createUser(body: CreateUserInputModel): Promise<UserViewModel> {
+   static async createUser(body: CreateUserInputModel): Promise<ObjectId> {
         const passwordHash = await bcrypt.hash(body.password, 10)
         const newUser: UserDbModel = {
             _id: new ObjectId(),
@@ -37,7 +37,7 @@ export class UsersService {
 
         };
 
-        return UsersRepository.createUser(newUser)
+        return  UsersRepository.createUser(newUser)
     }
 
     static async deleteUser(id: string): Promise<boolean> {
