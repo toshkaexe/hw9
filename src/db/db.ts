@@ -3,7 +3,7 @@ import {MongoClient, ObjectId} from "mongodb";
 import {BlogDbModel} from "../models/blogs/blog-models";
 import {PostDbModel} from "../models/posts/posts-models";
 import {UserDbModel} from "../models/users/users-models";
-import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model";
+import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
 
 import {TokenDbModel} from "../models/auth/auth-models";
 import {DeviceAuthSessionDb, ApiRequestModelDate} from "../models/devices/devices-models";

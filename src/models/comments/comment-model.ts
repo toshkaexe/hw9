@@ -1,6 +1,6 @@
 import {WithId} from "mongodb";
 
-export type CommentatorInfo = {
+export type CommentatorInfoModel = {
     userId: string
     userLogin: string
 }
@@ -8,21 +8,21 @@ export type CommentatorInfo = {
 export type CommentDbModel = {
     postId: string,
     content: string
-    commentatorInfo: CommentatorInfo
+    commentatorInfo: CommentatorInfoModel
     createdAt: string
 }
 
 export type CommentWidthPostModel = {
     postId: string
     content: string
-    commentatorInfo: CommentatorInfo
+    commentatorInfo: CommentatorInfoModel
     createdAt: string
 }
 
 export type CommentView = {
     id: string
     content: string
-    commentatorInfo: CommentatorInfo
+    commentatorInfo: CommentatorInfoModel
     createdAt: string
 }
 export const commentMapper = (comment: WithId<CommentDbModel>): CommentView => {

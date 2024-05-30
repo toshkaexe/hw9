@@ -1,6 +1,6 @@
 import {
     BlogDbModel,
-    OutputBlogModel,
+    BlogViewModel,
     UpdateBlogModel
 } from "../models/blogs/blog-models";
 import {blogMapper} from "../models/blogs/blog-models";
@@ -53,7 +53,7 @@ export class BlogRepository {
     }
 
 
-    static async getBlogById(id: string): Promise<OutputBlogModel | null> {
+    static async getBlogById(id: string): Promise<BlogViewModel | null> {
         if (id == null) return null;
         try {
             const blog = await BlogModel.findOne({_id: new ObjectId(id)});

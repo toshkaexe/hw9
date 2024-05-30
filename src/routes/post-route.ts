@@ -16,7 +16,7 @@ import {getPageOptions} from "../types/type";
 import {PostsQueryRepository} from "../repositories/posts-query-repository";
 import {PostsService} from "../domain/posts-service";
 import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
-import {OutputBlogModel} from "../models/blogs/blog-models";
+import {BlogViewModel} from "../models/blogs/blog-models";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
 import {CommentView} from "../models/comments/comment-model";
@@ -61,7 +61,7 @@ postRoute.put('/:postId',
     async (req: Request, res: Response) => {
         const blogId = req.body.blogId
         const postId = req.params.postId
-        const blogExist: OutputBlogModel | null = await BlogsQueryRepository.findBlogById(blogId)
+        const blogExist: BlogViewModel | null = await BlogsQueryRepository.findBlogById(blogId)
         const postExist = await PostsQueryRepository.findPostById(postId)
 
         if (!blogExist) {

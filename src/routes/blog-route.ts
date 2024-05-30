@@ -6,7 +6,7 @@ import {randomUUID} from "crypto";
 import {db} from '../db/db'
 import {HTTP_STATUSES
 } from "../models/common";
-import {CreateBlogModel, OutputBlogModel, Paginator} from "../models/blogs/blog-models";
+import {CreateBlogModel, BlogViewModel, Paginator} from "../models/blogs/blog-models";
 import {ObjectId} from "mongodb";
 import {BlogService} from "../domain/blog-service";
 import {getPageOptions} from "../types/type";
@@ -24,7 +24,7 @@ blogRoute.get('/',
         const { pageNumber, pageSize, sortBy, sortDirection } = getPageOptions(req.query);
         const searchNameTerm = req.query.searchNameTerm ? req.query.searchNameTerm.toString() : null
 
-        const foundBlogs: Paginator<OutputBlogModel> = await
+        const foundBlogs: Paginator<BlogViewModel> = await
             BlogsQueryRepository.findBlogs(pageNumber, pageSize,
             sortBy, sortDirection, searchNameTerm)
         res.send(foundBlogs)
@@ -35,7 +35,7 @@ blogRoute.get('/',
 blogRoute.get('/:blogId',
 
     async (req: Request, res: Response): Promise<void> => {
-        const foundBlog: OutputBlogModel | null =
+        const foundBlog: BlogViewModel | null =
             await BlogsQueryRepository.findBlogById(req.params.blogId)
         foundBlog ? res.status(HTTP_STATUSES.OK_200).send(foundBlog) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
@@ -44,7 +44,7 @@ blogRoute.get('/:blogId',
 blogRoute.get('/:blogId/posts',
 
     async (req: Request, res: Response): Promise<void> => {
-        const foundBlog: OutputBlogModel | null =
+        const foundBlog: BlogViewModel | null =
             await BlogsQueryRepository.findBlogById(req.params.blogId)
         if (!foundBlog) {
             res.sendStatus(404)

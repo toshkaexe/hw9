@@ -3,18 +3,31 @@ import {v4 as uuidv4} from "uuid";
 import {add} from "date-fns/add";
 
 export type UserDbModel = {
-    _id: ObjectId,
-    accountData: {
+    // _id: ObjectId,
+     accountData: {
         userName: string,
         email: string,
         passwordHash: string,
-        createdAt: string,
+        createdAt: string
     },
     emailConfirmation: {
         confirmationCode: string,
         expirationDate: Date,
         isConfirmed: boolean
     }
+}
+
+export type UserAccountInfo = {
+    userName: string,
+    email: string,
+    passwordHash: string,
+    createdAt: string
+}
+
+export type UserConfirmatioInfo = {
+    confirmationCode: string,
+    expirationDate: Date,
+    isConfirmed: boolean
 }
 
 export type CreateUserInputModel = {

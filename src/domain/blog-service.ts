@@ -1,8 +1,8 @@
-import {CreateBlogModel, UpdateBlogModel} from "../models/blogs/blog-models";
+import {BlogViewModel, CreateBlogModel, UpdateBlogModel} from "../models/blogs/blog-models";
 import {BlogRepository} from "../repositories/blog-repository";
 export class BlogService {
     static async createBlog(body: CreateBlogModel) {
-        const newBlog = {
+        const newBlog:Omit<BlogViewModel, 'id'> = {
             name: body.name,
             description: body.description,
             websiteUrl: body.websiteUrl,

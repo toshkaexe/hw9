@@ -28,7 +28,7 @@ export type UpdateBlogModel = {
     description: string,
     websiteUrl: string
 }
-export type OutputBlogModel = {
+export type BlogViewModel = {
     id: string
     name: string
     description: string
@@ -47,7 +47,7 @@ export type Paginator<OutputBlogModel> = {
 }
 
 export const blogMapper = (blog: WithId<CreateBlogModel>):
-    OutputBlogModel => {
+    BlogViewModel => {
     return {
         id: blog._id.toString(),
         name: blog.name,
@@ -57,3 +57,20 @@ export const blogMapper = (blog: WithId<CreateBlogModel>):
         isMembership: blog.isMembership,
     }
 }
+
+export type BlogInputModel = {
+    /**
+     * max length 15
+     */
+    name: string
+    /**
+     * max length 500
+     */
+    description: string
+    /**
+     * max length 100
+     * pattern: ^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$
+     */
+    websiteUrl: string
+}
+
