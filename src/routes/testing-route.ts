@@ -4,15 +4,15 @@ import {
 
 
 } from "../db/db";
-import {ApiRequestModel, BlogModel, CommentModel, DeviceModel, PostModel, BlacklistTokensModel, UserModel} from "../db/schemas";
+import {ApiRequestModel, BlogMongoModel, CommentModel, DeviceModel, PostMongoModel, BlacklistTokensModel, UserModel} from "../db/schemas";
 
 export const testingRoute = Router({})
 
 testingRoute.delete('/all-data', async (req: Request, res: Response) => {
 
-    await BlogModel.deleteMany({});
+    await BlogMongoModel.deleteMany({});
 
-    await PostModel.deleteMany({});
+    await PostMongoModel.deleteMany({});
 
     await UserModel.deleteMany({});
 

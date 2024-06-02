@@ -5,8 +5,8 @@ import {UserModel} from "../db/schemas";
 export class UsersRepository {
 
 
-    static async createUser(user: UserDbModel): Promise<ObjectId> {
-        const result = new UserModel(user);
+    static async createUser(newUser: UserDbModel): Promise<ObjectId> {
+        const result = new UserModel(newUser);
         await result.save()
         return result._id;
     }
@@ -68,4 +68,9 @@ export class UsersRepository {
         return user ? user : null
     }
 
+    static async updateUser(filter: any, updateUser: UserDbModel) {
+        const result = await UserModel.updateOne(filter, updateUser)
+
+        return Boolean(result.modifiedCount === 1)
+    }
 }

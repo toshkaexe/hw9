@@ -4,7 +4,7 @@ import {postRoute} from "./routes/post-route"
 import {testingRoute} from "./routes/testing-route";
 import morganBody from "morgan-body";
 import bodyParser from "body-parser";
-import {authRoute} from "./routes/auth-route";
+import {authRouter} from "./routes/auth-router";
 import {usersRouter} from "./routes/users-route";
 import {commentsRoute} from "./routes/comments-route";
 import {emailRoute} from "./routes/emailRoute";
@@ -45,7 +45,7 @@ app.use('/blogs', blogRoute)
 app.use('/posts', postRoute)
 app.use('/testing', testingRoute)
 
-app.use('/auth', authRoute)
+app.use('/auth', authRouter)
 app.use('/users', usersRouter)
 app.use('/comments', commentsRoute)
 

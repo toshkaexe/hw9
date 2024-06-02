@@ -1,6 +1,6 @@
 import {Router, Request, Response} from 'express';
 import {HTTP_STATUSES} from "../models/common";
-import {inputValidation} from "../validators/input-validation";
+import {inputValidation, isEmailValidation, passwordRecoveryValidation} from "../validators/input-validation";
 import {validateAuthorization} from "../validators/auth-validation";
 import {UsersQueryRepository} from "../repositories/user-query-repository";
 import {
@@ -17,10 +17,11 @@ import {restrictNumberQueriesMiddleware} from "../middleware/restrict-number-que
 import {bearerAuth} from "../middleware/auth-middlewares";
 import {BlacklistService} from "../domain/blacklist-service";
 import {SessionRepository} from "../repositories/session-repository";
+import {NewPasswordRecoveryInputModel} from "../models/password/password-model";
 
-export const authRoute = Router({})
+export const authRouter = Router({})
 
-authRoute.post('/registration-email-resending',
+authRouter.post('/registration-email-resending',
     restrictNumberQueriesMiddleware,
     authRegistrationResendingEmail(),
     async (req: Request, res: Response) => {
@@ -34,7 +35,7 @@ authRoute.post('/registration-email-resending',
     }
 )
 
-authRoute.post('/registration-confirmation',
+authRouter.post('/registration-confirmation',
     restrictNumberQueriesMiddleware,
     authConfirmationValidation(),
 
@@ -50,7 +51,7 @@ authRoute.post('/registration-confirmation',
     }
 )
 
-authRoute.post('/registration',
+authRouter.post('/registration',
     restrictNumberQueriesMiddleware,
     registrationValidation(),
     async (req: Request, res: Response): Promise<void> => {
@@ -65,7 +66,7 @@ authRoute.post('/registration',
         return
     }
 )
-authRoute.post('/login',
+authRouter.post('/login',
     restrictNumberQueriesMiddleware,
     validateAuthorization(),
     inputValidation,
@@ -99,7 +100,7 @@ authRoute.post('/login',
     }
 )
 
-authRoute.get('/me',
+authRouter.get('/me',
     bearerAuth,
     async (req: Request, res: Response) => {
         const userId = req.user!.userId
@@ -116,7 +117,7 @@ authRoute.get('/me',
 
     })
 
-authRoute.post('/refresh-token',
+authRouter.post('/refresh-token',
     verifyTokenInCookie,
     async (req: Request, res: Response) => {
         const oldRefreshToken = req.cookies?.refreshToken;
@@ -147,7 +148,7 @@ authRoute.post('/refresh-token',
     });
 
 
-authRoute.post('/logout',
+authRouter.post('/logout',
     logoutTokenInCookie,
     async (req: Request, res: Response) => {
 
@@ -173,3 +174,33 @@ authRoute.post('/logout',
         }
         return res.sendStatus(204)
     });
+
+
+export interface RequestBody<B> extends Request {
+    body: B
+}
+
+authRouter.post('/new-password',
+    restrictNumberQueriesMiddleware,
+    passwordRecoveryValidation(),
+    async (req: RequestBody<NewPasswordRecoveryInputModel>, res: Response) => {
+    const recoveryResult =
+        await AuthService.recoverUserPassword(req.body.newPassword, req.body.recoveryCode)
+
+    if (recoveryResult.status === HTTP_STATUSES.BAD_REQUEST_400) {
+        return res.status(HTTP_STATUSES.BAD_REQUEST_400).send(recoveryResult.data)
+    }
+
+    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+});
+
+
+authRouter.post('/password-recovery',
+    restrictNumberQueriesMiddleware,
+    isEmailValidation(),
+    async (req: RequestBody<{ email: string }>, res: Response) => {
+
+    await AuthService.sendPasswordRecoveryEmail(req.body.email)
+
+    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+})

@@ -5,6 +5,7 @@ import {UsersRepository} from "../repositories/users-repositiory";
 import {LoginInputModel} from "../models/auth/login-model";
 import {add} from "date-fns/add";
 import {randomUUID} from "crypto";
+import {BryptService} from "./brypt-service";
 
 
 
@@ -17,16 +18,15 @@ export class UsersService {
 
     }
    static async createUser(body: CreateUserInputModel): Promise<ObjectId> {
-        const passwordHash = await bcrypt.hash(body.password, 10)
+        const passwordHash = await BryptService.getHash(body.password)
         const newUser: UserDbModel = {
-            _id: new ObjectId(),
-            accountData: {
-                "userName": body.login,
-                "email": body.email,
-                "passwordHash": passwordHash,
-                "createdAt": new Date().toISOString(),
+            userData: {
+                login: body.login,
+                email: body.email,
+                passwordHash: passwordHash,
+                createdAt: new Date().toISOString(),
             },
-            emailConfirmation: {
+            confirmationData: {
                 confirmationCode: randomUUID(),
                 expirationDate: add(new Date(), {
                     hours: 1,
@@ -34,11 +34,9 @@ export class UsersService {
                 }),
                 isConfirmed: false
             }
-
         };
-
-        return  UsersRepository.createUser(newUser)
-    }
+        return await  UsersRepository.createUser(newUser)
+   }
 
     static async deleteUser(id: string): Promise<boolean> {
         return UsersRepository.deleteUser(id)

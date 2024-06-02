@@ -56,7 +56,7 @@ export const confirmationCodeValidation
     if (!user) {
         throw new Error('User does not exist');
     }
-    if (user.emailConfirmation.isConfirmed){
+    if (user.confirmationData.isConfirmed){
         throw new Error('User is already confirmed')
     }
     return true;
@@ -75,7 +75,7 @@ export const emailExistValidation = body('email')
     if (!userByEmail) {
         throw new Error('User already exists');
     }
-    if (userByEmail.emailConfirmation.isConfirmed) {
+    if (userByEmail.confirmationData.isConfirmed) {
         throw new Error('User already confirmed');
     }
 

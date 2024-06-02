@@ -1,6 +1,6 @@
 import {CommentDbModel, commentMapper, CommentView} from "../models/comments/comment-model";
 import {InsertOneResult, ObjectId} from "mongodb";
-import {BlogModel, CommentModel} from "../db/schemas";
+import {BlogMongoModel, CommentModel} from "../db/schemas";
 
 
 export class commentsRepository  {

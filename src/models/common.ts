@@ -46,33 +46,16 @@ export type ErrorMessageType = {
     field: string,
     message: string
 }
-export type ErrorType = {
-    errorsMessages: ErrorMessageType[]
-}
 
-export type BlogBody = {
-    name: string,
-    description: string,
-    websiteUrl: string
-}
+export type ErrorMessageHandleResult = { errorsMessages: ErrorMessageType[] }
 
-export type PostBody = {
-
-    title: string,
-    shortDescription: string,
-    content: string,
-    blogId: string
-
-}
-export type PostType = {
-    id: string,
-    title: string,
-    shortDescription: string,
-    content: string,
-    blogId: string,
-    description: string
-}
-
-export type Params = {
-    id: string
+export const errorMessagesHandleService = (errorMessageData: ErrorMessageType): ErrorMessageHandleResult => {
+    return {
+        errorsMessages: [
+            {
+                message: errorMessageData.message,
+                field: errorMessageData.field,
+            },
+        ],
+    }
 }

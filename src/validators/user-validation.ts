@@ -27,4 +27,5 @@ export const validateUsers = () => [
         .notEmpty()
         .matches(emailPattern)
         .withMessage('errors in email'),
-]
+];
+

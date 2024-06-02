@@ -2,7 +2,7 @@ import {Paginator} from "../models/posts/posts-models";
 import {PostDbModel, postMapper, OutputPostModel} from "../models/posts/posts-models";
 
 import {ObjectId, WithId} from "mongodb";
-import {PostModel} from "../db/schemas";
+import {PostMongoModel} from "../db/schemas";
 
 export class PostsQueryRepository {
 
@@ -17,10 +17,10 @@ export class PostsQueryRepository {
         if (sortDirection === "asc") {
             sortOptions[sortBy] = 1
         }
-        const totalCount = await PostModel.countDocuments({})
+        const totalCount = await PostMongoModel.countDocuments({})
         const pagesCount = Math.ceil(totalCount / pageSize)
         const scip = (page - 1) * pageSize
-        const post = await PostModel
+        const post = await PostMongoModel
             .find({})
             .sort(sortOptions)
             .skip(scip)
@@ -39,7 +39,7 @@ export class PostsQueryRepository {
 
     static async findPostById(id: string): Promise<OutputPostModel | null> {
         if (!ObjectId.isValid(id)) return null
-        const post: WithId<PostDbModel> | null = await PostModel.findOne({_id: new ObjectId(id)})
+        const post: WithId<PostDbModel> | null = await PostMongoModel.findOne({_id: new ObjectId(id)})
         return post ? postMapper(post) : null
     }
 

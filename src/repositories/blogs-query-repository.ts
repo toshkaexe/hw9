@@ -3,7 +3,7 @@ import {BlogDbModel, blogMapper, BlogViewModel, Paginator} from
 
 import {ObjectId, WithId} from "mongodb";
 import {postMapper} from "../models/posts/posts-models";
-import {BlogModel, PostModel} from "../db/schemas";
+import {BlogMongoModel, PostMongoModel} from "../db/schemas";
 
 export class BlogsQueryRepository {
 
@@ -25,10 +25,10 @@ export class BlogsQueryRepository {
         if (sortDirection === "asc") {
             sortOptions[sortBy] = 1
         }
-        const totalCount = await BlogModel.countDocuments(searchNameFilter)
+        const totalCount = await BlogMongoModel.countDocuments(searchNameFilter)
         const pagesCount = Math.ceil(totalCount / +pageSize)
         const scip = (+page - 1) * +pageSize
-        const blogs = await BlogModel
+        const blogs = await BlogMongoModel
             .find(searchNameFilter)
             .sort(sortOptions)
             .skip(scip)
@@ -58,10 +58,10 @@ export class BlogsQueryRepository {
             }
             const filter = {blogId: id}
 
-            const totalCount = await PostModel.countDocuments(filter)
+            const totalCount = await PostMongoModel.countDocuments(filter)
             const pagesCount = Math.ceil(+totalCount / +pageSize)
             const scip = (+pageNumber - 1) * +pageSize
-            const posts = await PostModel
+            const posts = await PostMongoModel
                 .find(filter)
                 .sort(sortOptions)
                 .skip(scip)
@@ -81,7 +81,7 @@ export class BlogsQueryRepository {
 
     static async findBlogById(id: string): Promise<BlogViewModel | null> {
         if (!ObjectId.isValid(id)) return null
-        const blog: WithId<BlogDbModel> | null = await BlogModel.findOne(
+        const blog: WithId<BlogDbModel> | null = await BlogMongoModel.findOne(
             {_id: new ObjectId(id)})
         return blog ? blogMapper(blog) : null
     }

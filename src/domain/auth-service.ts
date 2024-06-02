@@ -9,11 +9,14 @@ import {UsersService} from "./users-service";
 import {RequestApiRepository} from "../repositories/request-api-repository";
 import {add} from "date-fns/add";
 import {emailManager} from "../managers/email-manager";
-import {CreateUserInputModel} from "../models/users/users-models";
+import {CreateUserInputModel, UserDbModel} from "../models/users/users-models";
 import bcrypt from "bcrypt";
 import {LoginInputModel} from "../models/auth/auth-models";
+import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
+import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
-
+import { v4 as uuidv4 } from 'uuid'
+import {BryptService} from "./brypt-service";
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
 const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
 
@@ -112,7 +115,7 @@ export class AuthService {
     static async resendCode(email: string) {
         const user = await UsersRepository.findByLoginOrEmail(email)
         if (!user) return null
-        if (user.emailConfirmation.isConfirmed) return false
+        if (user.confirmationData.isConfirmed) return false
         const newCode = randomUUID()
         const expirationDate = add(new Date(), {
             hours: 1
@@ -147,14 +150,14 @@ export class AuthService {
         if (userByEmail) return false
         const passwordHash = await bcrypt.hash(inputData.password, 10)
         const user = {
-            _id: new ObjectId(),
-            accountData: {
-                userName: inputData.login,
+           // _id: new ObjectId(),
+            userData: {
+                login: inputData.login,
                 email: inputData.email,
                 passwordHash,
                 createdAt: new Date().toISOString(),
             },
-            emailConfirmation: {
+            confirmationData: {
                 confirmationCode: randomUUID(),
                 expirationDate: add(new Date(), {
                     hours: 1,
@@ -170,13 +173,13 @@ export class AuthService {
         <h1>Thanks for your registration</h1>
         <p>
             To finish registration, please follow the link below:
-            <a href='https://somesite.com/confirm-email?code=${user.emailConfirmation.confirmationCode}'>
+            <a href='https://somesite.com/confirm-email?code=${user.confirmationData.confirmationCode}'>
             
                 complete registration
             </a>
         </p>
         <p>Код поддверждения для тестов</p>
-        <p>'${user.emailConfirmation.confirmationCode}'</p>
+        <p>'${user.confirmationData.confirmationCode}'</p>
     `
         }
         const createResult = await UsersRepository.createUser(user)
@@ -186,7 +189,7 @@ export class AuthService {
             return true
         } catch (error) {
             console.error(error)
-            await UsersRepository.deleteUser(user._id.toString())
+            await UsersRepository.deleteUser(createResult.toString())
             return null
         }
     }
@@ -199,7 +202,7 @@ export class AuthService {
         if (!user) return null
 
         const compare =
-            await bcrypt.compare(body.password, user.accountData.passwordHash)
+            await bcrypt.compare(body.password, user.userData.passwordHash)
         if (compare) {
             return user
         }
@@ -209,13 +212,86 @@ export class AuthService {
     static async confirmEmail(code: string) {
         const user = await UsersRepository.findUserByConfirmationCode(code)
         if (!user) return false
-        if (user.emailConfirmation.isConfirmed) return false
-        if (user.emailConfirmation.confirmationCode !== code) return false
-        if (user.emailConfirmation.expirationDate < new Date()) return false
+        if (user.confirmationData.isConfirmed) return false
+        if (user.confirmationData.confirmationCode !== code) return false
+        if (user.confirmationData.expirationDate < new Date()) return false
 
         let result = await UsersRepository.updateConfirmation(user._id.toString())
         return result
     }
+
+  static  async recoverUserPassword(newPassword: string, recoveryCode: string) {
+        const userToConfirm =
+            await AuthQueryRepository.getUserByPasswordRecoveryConfirmationCode(recoveryCode)
+
+        if (!userToConfirm || userToConfirm.userData.passwordHash !== recoveryCode) {
+            return {
+                status: HTTP_STATUSES.BAD_REQUEST_400,
+                data: errorMessagesHandleService({ message: 'Incorrect verification code', field: 'recoveryCode' }),
+            }
+        }
+
+        const plainUserToConfirm = userToConfirm.toObject()
+
+      //const passwordHash = await bcrypt.hash(newPassword, 10)
+      const passwordHash = await BryptService.getHash(newPassword);
+
+        const updatedUser: UserDbModel = {
+            userData: {
+                ...plainUserToConfirm.userData,
+                passwordHash
+            },
+            confirmationData: {
+                ...plainUserToConfirm.confirmationData,
+                isPasswordRecoveryConfirmed: true,
+            }
+        }
+
+        await UsersRepository.updateUser({ 'userData.email': userToConfirm.userData.email }, updatedUser)
+
+        return {
+            status: 'SUCCESS',
+            data: null,
+        }
+    }
+
+
+
+    static async sendPasswordRecoveryEmail(email: string) {
+        const user = await AuthQueryRepository.getUserByLoginOrEmail(email)
+
+        //if (!user) {
+          //  return operationsResultService.generateResponse(ResultToRouterStatus.NOT_FOUND)
+        //}
+
+      //  const plainUser = user.t;
+
+/*        const updateUserData: UserDbModel = {
+            userData: { ...plainUser.userData },
+            confirmationData: {
+                ...plainUser.confirmationData,
+                passwordRecoveryCode: uuidv4(),
+                passwordRecoveryCodeExpirationDate: add(new Date(), {
+                    hours: 1,
+                    minutes: 1,
+                }),
+                isPasswordRecoveryConfirmed: false,
+            }
+        }*/
+
+        // await AuthService.updateUser({ 'userData.email': email }, updateUserData)
+        //
+        // try {
+        //     const mailInfo = await emailManager.sendPasswordRecoveryEmail(email, updateUserData.confirmationData.passwordRecoveryCode!)
+        //     console.log('@> Information::mailInfo: ', mailInfo)
+        // } catch (err) {
+        //     console.error('@> Error::emailManager: ', err)
+        // }
+        //
+        // return operationsResultService.generateResponse(ResultToRouterStatus.SUCCESS)
+    }
+
+
 
 }
 

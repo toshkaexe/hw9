@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import {BlogDbModel} from "../models/blogs/blog-models";
 import {PostDbModel} from "../models/posts/posts-models";
-import {UserAccountInfo, UserConfirmatioInfo, UserDbModel} from "../models/users/users-models";
+import {UserAccountInfo, UserConfirmationInfo, UserDbModel} from "../models/users/users-models";
 import {ObjectId} from "mongodb";
 import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
 import {TokenDbModel} from "../models/auth/auth-models";
@@ -16,7 +16,7 @@ const blogSchema
     createdAt: {type: String, required: true},
     isMembership: {type: Boolean, required: true}
 });
-export const BlogModel =
+export const BlogMongoModel =
     mongoose.model('blogs', blogSchema);
 
 const PostSchema
@@ -28,19 +28,19 @@ const PostSchema
     blogName: {type: String, required: true},
     createdAt: {type: String, required: true}
 });
-export const PostModel = mongoose.model('posts', PostSchema);
+export const PostMongoModel = mongoose.model('posts', PostSchema);
 
 //--------------------------------------------------------------------
 const UserAccountData =
     new mongoose.Schema<UserAccountInfo>({
-        userName: {type: String, required: true},
+        login: {type: String, required: true},
         email: {type: String, required: true},
         passwordHash: {type: String, required: true},
         createdAt: {type: String, required: true}
     });
 
 const UserConfirmationData =
-    new mongoose.Schema<UserConfirmatioInfo>({
+    new mongoose.Schema<UserConfirmationInfo>({
         confirmationCode: {type: String, required: true},
         expirationDate: {type: Date, required: true},
         isConfirmed: {type: Boolean, required: true}
@@ -48,8 +48,8 @@ const UserConfirmationData =
 
 const userSchema =
     new mongoose.Schema<UserDbModel>({
-        accountData: UserAccountData,
-        emailConfirmation: UserConfirmationData
+        userData : UserAccountData,
+        confirmationData: UserConfirmationData
     });
 export const UserModel = mongoose.model('users', userSchema);
 

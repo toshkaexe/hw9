@@ -5,19 +5,19 @@ import {
 } from "../models/blogs/blog-models";
 import {blogMapper} from "../models/blogs/blog-models";
 import {InsertOneResult, ObjectId} from "mongodb";
-import {BlogModel} from "../db/schemas";
+import {BlogMongoModel} from "../db/schemas";
 
 export class BlogRepository {
 
     static async createBlog(newBlog: BlogDbModel) {
-        const result = new BlogModel(newBlog)
+        const result = new BlogMongoModel(newBlog)
         await result.save()
         return result._id;
     }
 
     static async updateBlog(id: string, blog: UpdateBlogModel): Promise<boolean> {
         try {
-            const updatedBlog = await BlogModel.findById(id)
+            const updatedBlog = await BlogMongoModel.findById(id)
 
             if (!updatedBlog) return false
 
@@ -37,7 +37,7 @@ export class BlogRepository {
 
     static async deleteBlogById(id: string): Promise<boolean> {
         try {
-            const blog = await BlogModel.findOne({_id: new ObjectId(id)})
+            const blog = await BlogMongoModel.findOne({_id: new ObjectId(id)})
             if (!blog) return  false;
 
             await blog.deleteOne()
@@ -49,14 +49,14 @@ export class BlogRepository {
     }
 
     static async deleteAll() {
-        const result = await BlogModel.deleteMany({})
+        const result = await BlogMongoModel.deleteMany({})
     }
 
 
     static async getBlogById(id: string): Promise<BlogViewModel | null> {
         if (id == null) return null;
         try {
-            const blog = await BlogModel.findOne({_id: new ObjectId(id)});
+            const blog = await BlogMongoModel.findOne({_id: new ObjectId(id)});
             if (!blog) {
                 return null
             }
