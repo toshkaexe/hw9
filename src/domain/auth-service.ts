@@ -146,9 +146,13 @@ export class AuthService {
     }
 
     static async createUserAccount(inputData: CreateUserInputModel): Promise<null | boolean> {
+
         const userByEmail = await UsersRepository.findByLoginOrEmail(inputData.login)
+
         if (userByEmail) return false
-        const passwordHash = await bcrypt.hash(inputData.password, 10)
+
+        const passwordHash = await BryptService.getHash(inputData.password)
+
         const user = {
            // _id: new ObjectId(),
             userData: {
@@ -258,11 +262,15 @@ export class AuthService {
 
 
     static async sendPasswordRecoveryEmail(email: string) {
-        const user = await AuthQueryRepository.getUserByLoginOrEmail(email)
+        const user =
+            await AuthQueryRepository.getUserByLoginOrEmail(email)
 
-        //if (!user) {
-          //  return operationsResultService.generateResponse(ResultToRouterStatus.NOT_FOUND)
-        //}
+        if (!user) {
+         //   return operationsResultService.generateResponse(ResultToRouterStatus.NOT_FOUND)
+            console.log("we do not have this user");
+            return;
+
+        }
 
       //  const plainUser = user.t;
 

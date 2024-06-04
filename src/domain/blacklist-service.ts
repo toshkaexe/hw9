@@ -1,5 +1,5 @@
 import {BlacklistRepository} from "../repositories/blacklist-repository";
-import {BlacklistTokensModel} from "../db/schemas";
+import {BlacklistTokensMongoModel} from "../db/schemas";
 
 
 export class BlacklistService {
@@ -8,7 +8,7 @@ export class BlacklistService {
     static async getAll() {
         try {
 
-            return await BlacklistTokensModel.find({});
+            return await BlacklistTokensMongoModel.find({});
 
         } catch (e) {
             return false;

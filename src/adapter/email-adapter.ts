@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import {BlogDbModel, CreateBlogModel} from "../models/blogs/blog-models";
 
 export const emailAdapter = {
 
@@ -23,5 +24,4 @@ export const emailAdapter = {
         console.log(info);
         return info;
     }
-
 }

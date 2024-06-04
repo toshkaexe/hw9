@@ -1,12 +1,12 @@
 import {DeviceAuthSessionDb, sessionDbMapper} from "../models/devices/devices-models";
-import {DeviceModel} from "../db/schemas";
+import {DeviceMongoModel} from "../db/schemas";
 
 
 export class SessionRepository {
 
     static async creatDeviceSession(sessionData: DeviceAuthSessionDb) {
         try {
-            const res = await DeviceModel.create(sessionData)
+            const res = await DeviceMongoModel.create(sessionData)
             return res.toString()
         } catch (e) {
             console.log(e)
@@ -17,7 +17,7 @@ export class SessionRepository {
     static async updateDeviceSession(expDate: string, lastActiveDate: string, userId: string, deviceId: string) {
         try {
             const res =
-                await DeviceModel.updateOne(
+                await DeviceMongoModel.updateOne(
                     {
                         $and: [
                             {"userId": userId},
@@ -39,7 +39,7 @@ export class SessionRepository {
     static async deleteSessionByDeviceIdAndUserId(deviceId: string, userId: string) {
 
         try {
-            return await DeviceModel.deleteOne(
+            return await DeviceMongoModel.deleteOne(
                 {
                     deviceId: deviceId,
                     userId: userId
@@ -57,7 +57,7 @@ export class SessionRepository {
     ) {
         try {
             const res =
-                await DeviceModel
+                await DeviceMongoModel
                     .findOne({
                             userId: userId,
                             deviceId: deviceId
@@ -75,8 +75,8 @@ export class SessionRepository {
         try {
 
             const currentSession =
-                await DeviceModel.findOne({deviceId: deviceId, userId: userId});
-            return await DeviceModel.deleteMany({_id: {$ne: currentSession!._id}});
+                await DeviceMongoModel.findOne({deviceId: deviceId, userId: userId});
+            return await DeviceMongoModel.deleteMany({_id: {$ne: currentSession!._id}});
         } catch (e) {
             return false;
         }
@@ -84,14 +84,14 @@ export class SessionRepository {
 
     static async getSessionByIdExist(deviceId: string) {
         const session = await
-            DeviceModel.findOne({deviceId: deviceId});
+            DeviceMongoModel.findOne({deviceId: deviceId});
         if (!session) return false;
         return session;
     }
 
 
     static async getAllSessionByUser(userId: string) {
-        const user = await DeviceModel.find({userId: userId});
+        const user = await DeviceMongoModel.find({userId: userId});
         if (!user) return null;
 
         return user.map(sessionDbMapper);

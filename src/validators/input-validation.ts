@@ -58,7 +58,9 @@ export const notEmptyString = (field: string, message?: string) => {
 const recoveryCodeValidation = notEmptyString('recoveryCode');
 const passwordValidationWithLength = stringWithLengthValidation('newPassword', { min: 6, max: 20 })
 
-export const isEmailValidation = () => [ emailValidation, inputValidation ];
+export const isEmailValidation = () => [
+    emailValidation,
+inputValidation ];
 
 
 export const passwordRecoveryValidation = () => [ recoveryCodeValidation, passwordValidationWithLength, inputValidation ]

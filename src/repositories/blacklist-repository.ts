@@ -1,4 +1,4 @@
-import {BlacklistTokensModel} from "../db/schemas";
+import {BlacklistTokensMongoModel} from "../db/schemas";
 
 
 export class BlacklistRepository {
@@ -6,7 +6,7 @@ export class BlacklistRepository {
     static async addRefreshTokenToBlackList(token: string) {
         try {
             const res =
-                new  BlacklistTokensModel(token);
+                new  BlacklistTokensMongoModel(token);
             return await res.save()
         } catch (e) {
             console.log(e)
@@ -17,7 +17,7 @@ export class BlacklistRepository {
     static async isInDB(token: string) {
         try {
             const somethingInDB =
-                await BlacklistTokensModel.findOne({refreshToken: token});
+                await BlacklistTokensMongoModel.findOne({refreshToken: token});
             return !!somethingInDB; // Return true if document exists, false otherwise
         } catch (e) {
             console.log(e)

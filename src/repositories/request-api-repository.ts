@@ -1,5 +1,5 @@
 import {DeviceAuthSessionDb, ApiRequestModelDate, apiRequestMapper} from "../models/devices/devices-models";
-import {ApiRequestModel} from "../db/schemas";
+import {ApiRequestMongoModel} from "../db/schemas";
 
 
 
@@ -9,7 +9,7 @@ export class RequestApiRepository {
         try {
 
 
-            const res = await ApiRequestModel.create(apiRequest)
+            const res = await ApiRequestMongoModel.create(apiRequest)
            return  res;
          //   return apiRequestMapper({_id: res.toString(), ...apiRequest})
 
@@ -19,7 +19,7 @@ export class RequestApiRepository {
     }
 
     static async deleteAll() {
-          await ApiRequestModel.deleteMany({})
+          await ApiRequestMongoModel.deleteMany({})
         return;
     }
 }

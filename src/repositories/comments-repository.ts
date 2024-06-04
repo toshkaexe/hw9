@@ -1,13 +1,13 @@
 import {CommentDbModel, commentMapper, CommentView} from "../models/comments/comment-model";
 import {InsertOneResult, ObjectId} from "mongodb";
-import {BlogMongoModel, CommentModel} from "../db/schemas";
+import {BlogMongoModel, CommentMongoModel} from "../db/schemas";
 
 
 export class commentsRepository  {
 
     static async createComment(newComment: CommentDbModel) {
 
-        const result = new CommentModel(newComment)
+        const result = new CommentMongoModel(newComment)
         await result.save()
         return result._id;
         // const result: InsertOneResult<CommentDbModel> =
@@ -17,7 +17,7 @@ export class commentsRepository  {
 
     static async updateComment(id: string, body: any): Promise<any> {
         if(!ObjectId.isValid(id)) return false
-        const result = await CommentModel.updateOne({_id: new ObjectId(id)}, {
+        const result = await CommentMongoModel.updateOne({_id: new ObjectId(id)}, {
             $set: {
                 content: body.content
             }
@@ -27,13 +27,13 @@ export class commentsRepository  {
 
     static async deleteComment(id: string): Promise<boolean> {
        if(!ObjectId.isValid(id)) return false
-        const result = await CommentModel.deleteOne({_id: new ObjectId(id)})
+        const result = await CommentMongoModel.deleteOne({_id: new ObjectId(id)})
 
         return result.deletedCount === 1
     }
 
     static async deleteAll() {
-        return  await CommentModel.deleteMany({})
+        return  await CommentMongoModel.deleteMany({})
     }
 
 }

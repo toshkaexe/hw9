@@ -51,7 +51,7 @@ const userSchema =
         userData : UserAccountData,
         confirmationData: UserConfirmationData
     });
-export const UserModel = mongoose.model('users', userSchema);
+export const UserMongoModel = mongoose.model('users', userSchema);
 
 //-----------------------------------------------------------------------------------------------------------------------
 const CommentatorSchema =
@@ -67,7 +67,7 @@ const commentSchema =
         commentatorInfo: CommentatorSchema,
         createdAt: {type: String, required: true}
     });
-export const CommentModel =
+export const CommentMongoModel =
     mongoose.model('comments', commentSchema);
 
 //-----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ const tokenSchema =
     new mongoose.Schema<TokenDbModel>({
         refreshToken: {type: String, required: true}
     });
-export const BlacklistTokensModel =
+export const BlacklistTokensMongoModel =
     mongoose.model('tokens', tokenSchema);
 
 
@@ -88,7 +88,7 @@ const deviceSchema =
         deviceName: {type: String, required: true},
         lastActiveDate: {type: String, required: true}
     });
-export const DeviceModel = mongoose.model('devices', deviceSchema);
+export const DeviceMongoModel = mongoose.model('devices', deviceSchema);
 
 const apiRequestSchema =
     new mongoose.Schema<ApiRequestModelDate>({
@@ -96,4 +96,4 @@ const apiRequestSchema =
         url: {type: String, required: true},
         date: {type: Date, required: true}
     });
-export const ApiRequestModel = mongoose.model('apirequests', apiRequestSchema);
+export const ApiRequestMongoModel = mongoose.model('apirequests', apiRequestSchema);

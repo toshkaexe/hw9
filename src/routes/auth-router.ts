@@ -198,8 +198,14 @@ authRouter.post('/new-password',
 authRouter.post('/password-recovery',
     restrictNumberQueriesMiddleware,
     isEmailValidation(),
-    async (req: RequestBody<{ email: string }>, res: Response) => {
-
+    async (//req: Request,
+        req: RequestBody<{ email: string }>,
+           res: Response) => {
+    const emailPattern = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
+    const email1=req.body.email;
+        if (!emailPattern.test(email1)) {
+         return    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
+        }
     await AuthService.sendPasswordRecoveryEmail(req.body.email)
 
     return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)

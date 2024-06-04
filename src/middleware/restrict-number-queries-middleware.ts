@@ -2,7 +2,7 @@ import {NextFunction, Response, Request} from "express";
 
 import {HTTP_STATUSES} from "../models/common";
 import {AuthService} from "../domain/auth-service";
-import {ApiRequestModel} from "../db/schemas";
+import {ApiRequestMongoModel} from "../db/schemas";
 
 export const restrictNumberQueriesMiddleware = async (req: Request,
                                                       res: Response,
@@ -19,7 +19,7 @@ export const restrictNumberQueriesMiddleware = async (req: Request,
             date: {$gte: currentDateMinus10Seconds}
         };
 
-        const countDocuments = await ApiRequestModel.countDocuments(filter);
+        const countDocuments = await ApiRequestMongoModel.countDocuments(filter);
 
         if (countDocuments > 5) {
             console.error("У нас больше, чем 5 запросов!");
