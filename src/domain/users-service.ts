@@ -17,7 +17,7 @@ export class UsersService {
         return userMapper(user)
 
     }
-   static async createUser(body: CreateUserInputModel): Promise<ObjectId> {
+   static async createUser(body: CreateUserInputModel): Promise<UserViewModel> {
         const passwordHash = await BryptService.getHash(body.password)
         const newUser: UserDbModel = {
             userData: {
@@ -35,11 +35,12 @@ export class UsersService {
                 isConfirmed: false
             }
         };
-        return await  UsersRepository.createUser(newUser)
+        return userMapper(await UsersRepository.createUser(newUser))
    }
 
     static async deleteUser(id: string): Promise<boolean> {
         return UsersRepository.deleteUser(id)
     }
+
 
 }

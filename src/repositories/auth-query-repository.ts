@@ -3,11 +3,6 @@ import {authMappers} from "../models/mapper/authMapper";
 
 
 export class AuthQueryRepository {
-    static async getUserMeModelById(userId: string) {
-        const foundUser = await UserMongoModel.findOne({_id: userId})
-
-        return foundUser && authMappers.mapDbUserToMeModel(foundUser)
-    }
 
     static async getUserByLoginOrEmail(loginOrEmail: string) {
         const users =
@@ -42,4 +37,12 @@ export class AuthQueryRepository {
 
         return Boolean(authSession)
     }
+
+
+    static async getUserMeModelById(userId: string) {
+        const foundUser = await UserMongoModel.findOne({_id: userId})
+
+        return foundUser && authMappers.mapDbUserToMeModel(foundUser)
+    }
+
 }

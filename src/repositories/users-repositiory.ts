@@ -1,14 +1,15 @@
-import {UserDbModel, userMapper, UserViewModel} from "../models/users/users-models";
-import {InsertOneResult, ObjectId, WithId} from "mongodb";
+import {UserDbModel} from "../models/users/users-models";
+import {ObjectId, WithId} from "mongodb";
 import {UserMongoModel} from "../db/schemas";
+
 
 export class UsersRepository {
 
 
-    static async createUser(newUser: UserDbModel): Promise<ObjectId> {
+    static async createUser(newUser: UserDbModel): Promise<WithId<UserDbModel>> {
         const result = new UserMongoModel(newUser);
         await result.save()
-        return result._id;
+        return result;
     }
 
     static async findUserById(id: ObjectId) {
@@ -16,15 +17,13 @@ export class UsersRepository {
         return product ? product : null
     }
 
-    static async findByLoginOrEmail(loginOrEmail: string): Promise<WithId<UserDbModel> | null> {
-        const user = await UserMongoModel.findOne(
+    static async findByLoginOrEmail(loginOrEmail: string) {
+        return UserMongoModel.findOne(
             {
                 $or: [
-                    {'accountData.email': loginOrEmail},
-                    {'accountData.userName': loginOrEmail}]
-            })
-
-        return user
+                    {'userData.email': loginOrEmail},
+                    {'userData.login': loginOrEmail}]
+            });
     }
 
     static async deleteUser(id: string): Promise<boolean> {
@@ -57,9 +56,10 @@ export class UsersRepository {
         await UserMongoModel.updateOne({"accountData.email": email}, {
             $set: {
                 "emailConfirmation.confirmationCode": code,
-                "emailConfirmation.experationDate": data,
+                "emailConfirmation.expirationDate": data,
             }
         })
+
     }
 
     static async findUserByConfirmationCode(code: string) {
@@ -73,4 +73,17 @@ export class UsersRepository {
 
         return Boolean(result.modifiedCount === 1)
     }
+
+
+    static async update(email: string, code: string, data: Date) {
+        await UserMongoModel.updateOne({"accountData.email": email}, {
+            $set: {
+                "emailConfirmation.confirmationCode": code,
+                "emailConfirmation.expirationDate": data,
+            }
+        })
+
+    }
+
+
 }

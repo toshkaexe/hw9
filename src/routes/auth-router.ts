@@ -183,30 +183,38 @@ export interface RequestBody<B> extends Request {
 authRouter.post('/new-password',
     restrictNumberQueriesMiddleware,
     passwordRecoveryValidation(),
-    async (req: RequestBody<NewPasswordRecoveryInputModel>, res: Response) => {
-    const recoveryResult =
-        await AuthService.recoverUserPassword(req.body.newPassword, req.body.recoveryCode)
+    async (req: RequestBody<{
+               newPassword: string,
+               recoveryCode: string
+           }>,
+           res: Response) => {
+        const recoveryResult =
+            await AuthService.recoverUserPassword(req.body.newPassword, req.body.recoveryCode)
 
-    if (recoveryResult.status === HTTP_STATUSES.BAD_REQUEST_400) {
-        return res.status(HTTP_STATUSES.BAD_REQUEST_400).send(recoveryResult.data)
-    }
+        if (recoveryResult.status === HTTP_STATUSES.BAD_REQUEST_400) {
+            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send(recoveryResult.data)
+        }
 
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-});
+        return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+    });
 
 
 authRouter.post('/password-recovery',
     restrictNumberQueriesMiddleware,
     isEmailValidation(),
-    async (//req: Request,
-        req: RequestBody<{ email: string }>,
+    async (req: RequestBody<{ email: string }>,
            res: Response) => {
-    const emailPattern = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
-    const email1=req.body.email;
-        if (!emailPattern.test(email1)) {
-         return    res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400)
-        }
-    await AuthService.sendPasswordRecoveryEmail(req.body.email)
+/*
+        const emailPattern = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
 
-    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
-})
+        const isEmailInvalid = req.body.email;
+        if (!emailPattern.test(isEmailInvalid)) {
+            return res.sendStatus(400);
+        }
+*/
+
+        const user = await AuthService.sendPasswordRecoveryEmail(req.body.email);
+
+
+       return res.sendStatus(204);
+    })

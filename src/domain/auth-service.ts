@@ -8,15 +8,17 @@ import {UsersService} from "./users-service";
 
 import {RequestApiRepository} from "../repositories/request-api-repository";
 import {add} from "date-fns/add";
-import {emailManager} from "../managers/email-manager";
+import {EmailManager} from "../managers/email-manager";
 import {CreateUserInputModel, UserDbModel} from "../models/users/users-models";
 import bcrypt from "bcrypt";
 import {LoginInputModel} from "../models/auth/auth-models";
 import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
 import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
-import { v4 as uuidv4 } from 'uuid'
 import {BryptService} from "./brypt-service";
+
+
+
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
 const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
 
@@ -137,7 +139,7 @@ export class AuthService {
     `
         }
         try {
-            await emailManager.sendEmailRecoveryMessage(emailData)
+            await EmailManager.sendEmailRecoveryMessage(emailData)
             return true
         } catch (error) {
             console.log(error)
@@ -154,7 +156,7 @@ export class AuthService {
         const passwordHash = await BryptService.getHash(inputData.password)
 
         const user = {
-           // _id: new ObjectId(),
+            // _id: new ObjectId(),
             userData: {
                 login: inputData.login,
                 email: inputData.email,
@@ -188,7 +190,7 @@ export class AuthService {
         }
         const createResult = await UsersRepository.createUser(user)
         try {
-            await emailManager.sendEmailRecoveryMessage(emailData)
+            await EmailManager.sendEmailRecoveryMessage(emailData)
             console.log('письмо отправлено')
             return true
         } catch (error) {
@@ -224,21 +226,21 @@ export class AuthService {
         return result
     }
 
-  static  async recoverUserPassword(newPassword: string, recoveryCode: string) {
+    static async recoverUserPassword(newPassword: string, recoveryCode: string) {
         const userToConfirm =
             await AuthQueryRepository.getUserByPasswordRecoveryConfirmationCode(recoveryCode)
 
         if (!userToConfirm || userToConfirm.userData.passwordHash !== recoveryCode) {
             return {
                 status: HTTP_STATUSES.BAD_REQUEST_400,
-                data: errorMessagesHandleService({ message: 'Incorrect verification code', field: 'recoveryCode' }),
+                data: errorMessagesHandleService({message: 'Incorrect verification code', field: 'recoveryCode'}),
             }
         }
 
         const plainUserToConfirm = userToConfirm.toObject()
 
-      //const passwordHash = await bcrypt.hash(newPassword, 10)
-      const passwordHash = await BryptService.getHash(newPassword);
+        //const passwordHash = await bcrypt.hash(newPassword, 10)
+        const passwordHash = await BryptService.getHash(newPassword);
 
         const updatedUser: UserDbModel = {
             userData: {
@@ -251,7 +253,7 @@ export class AuthService {
             }
         }
 
-        await UsersRepository.updateUser({ 'userData.email': userToConfirm.userData.email }, updatedUser)
+        await UsersRepository.updateUser({'userData.email': userToConfirm.userData.email}, updatedUser)
 
         return {
             status: 'SUCCESS',
@@ -260,45 +262,60 @@ export class AuthService {
     }
 
 
-
     static async sendPasswordRecoveryEmail(email: string) {
         const user =
-            await AuthQueryRepository.getUserByLoginOrEmail(email)
+            await UsersRepository.findByLoginOrEmail(email)
+
 
         if (!user) {
-         //   return operationsResultService.generateResponse(ResultToRouterStatus.NOT_FOUND)
             console.log("we do not have this user");
-            return;
-
+            return false;
         }
 
-      //  const plainUser = user.t;
+        user.confirmationData.passwordRecoveryCode = randomUUID();
+        user.confirmationData.passwordRecoveryCodeExpirationDate = add(new Date(),
+            {
+                hours: 1,
+                minutes: 1,
+            })
 
-/*        const updateUserData: UserDbModel = {
-            userData: { ...plainUser.userData },
-            confirmationData: {
-                ...plainUser.confirmationData,
-                passwordRecoveryCode: uuidv4(),
-                passwordRecoveryCodeExpirationDate: add(new Date(), {
+        await UsersRepository.update(user.userData.email,
+            user.confirmationData.passwordRecoveryCode,
+            user.confirmationData.passwordRecoveryCodeExpirationDate);
+
+        await UsersRepository.update(
+            user.userData.email,
+            randomUUID(),
+            add(new Date(),
+                {
                     hours: 1,
                     minutes: 1,
-                }),
-                isPasswordRecoveryConfirmed: false,
-            }
-        }*/
+                }));
 
-        // await AuthService.updateUser({ 'userData.email': email }, updateUserData)
-        //
-        // try {
-        //     const mailInfo = await emailManager.sendPasswordRecoveryEmail(email, updateUserData.confirmationData.passwordRecoveryCode!)
-        //     console.log('@> Information::mailInfo: ', mailInfo)
-        // } catch (err) {
-        //     console.error('@> Error::emailManager: ', err)
-        // }
-        //
+        // готовим письмо
+        const emailData = {
+            email: user.userData.email,
+            subject: 'Password recovery',
+            message: ` <h1>Password recovery</h1>
+       <p>To finish password recovery please follow the link below:
+          <a href='https://somesite.com/password-recovery?recoveryCode=${user.confirmationData.passwordRecoveryCode}'>
+          recovery password</a>
+      </p>`
+        };
+
+        try {
+            // отправляем письмо
+            const mailInfo = await EmailManager.sendPasswordRecoveryMessage(
+                emailData.email,
+                emailData.subject,
+                emailData.message)
+            console.log('Information::mailInfo: ', mailInfo)
+        } catch (err) {
+            console.error('Error::emailManager: ', err)
+        }
+        return true;
         // return operationsResultService.generateResponse(ResultToRouterStatus.SUCCESS)
     }
-
 
 
 }

@@ -7,6 +7,14 @@ export type UserDbModel = {
     confirmationData: UserConfirmationData
 }
 
+export type UserAccountData = {
+    login: string,
+    email: string,
+    passwordHash: string,
+    createdAt: string
+}
+
+
 export type UserConfirmationData = {
     confirmationCode: string,
     expirationDate: Date,
@@ -15,13 +23,6 @@ export type UserConfirmationData = {
     passwordRecoveryCode?: string
     passwordRecoveryCodeExpirationDate?: Date
     isPasswordRecoveryConfirmed?: boolean
-}
-
-export type UserAccountData = {
-    login: string,
-    email: string,
-    passwordHash: string,
-    createdAt: string
 }
 
 export type UserAccountInfo = {

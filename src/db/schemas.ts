@@ -37,14 +37,14 @@ const UserAccountData =
         email: {type: String, required: true},
         passwordHash: {type: String, required: true},
         createdAt: {type: String, required: true}
-    });
+    },{_id: false});
 
 const UserConfirmationData =
     new mongoose.Schema<UserConfirmationInfo>({
         confirmationCode: {type: String, required: true},
         expirationDate: {type: Date, required: true},
         isConfirmed: {type: Boolean, required: true}
-    });
+    },{_id: false});
 
 const userSchema =
     new mongoose.Schema<UserDbModel>({
@@ -52,6 +52,8 @@ const userSchema =
         confirmationData: UserConfirmationData
     });
 export const UserMongoModel = mongoose.model('users', userSchema);
+
+
 
 //-----------------------------------------------------------------------------------------------------------------------
 const CommentatorSchema =

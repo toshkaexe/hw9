@@ -1,9 +1,9 @@
 import nodemailer from "nodemailer";
 import {BlogDbModel, CreateBlogModel} from "../models/blogs/blog-models";
 
-export const emailAdapter = {
+export class EmailAdapter {
 
-    async sendEmail(email: string, subject: string, message: string) {
+    static async sendEmail(email: string, subject: string, message: string) {
 
         let transporter = nodemailer.createTransport({
             service: 'Mail.ru',
