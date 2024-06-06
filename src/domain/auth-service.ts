@@ -278,10 +278,6 @@ export class AuthService {
                 minutes: 1,
             })
 
-        await UsersRepository.update(user.userData.email,
-            user.confirmationData.passwordRecoveryCode,
-            user.confirmationData.passwordRecoveryCodeExpirationDate);
-
         await UsersRepository.update(
             user.userData.email,
             randomUUID(),

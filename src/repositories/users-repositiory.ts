@@ -76,10 +76,10 @@ export class UsersRepository {
 
 
     static async update(email: string, code: string, data: Date) {
-        await UserMongoModel.updateOne({"accountData.email": email}, {
+        await UserMongoModel.updateOne({"userData.email": email}, {
             $set: {
-                "emailConfirmation.confirmationCode": code,
-                "emailConfirmation.expirationDate": data,
+                "confirmationData.confirmationCode": code,
+                "confirmationData.expirationDate": data,
             }
         })
 
