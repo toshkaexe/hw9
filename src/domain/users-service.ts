@@ -32,7 +32,8 @@ export class UsersService {
                     hours: 1,
                     minutes: 3
                 }),
-                isConfirmed: false
+                isConfirmed: false,
+                passwordRecoveryCode: "sad"
             }
         };
         return userMapper(await UsersRepository.saveNewUser(newUser))

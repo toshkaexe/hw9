@@ -13,29 +13,11 @@ export type UserAccountData = {
     passwordHash: string,
     createdAt: string
 }
-
-
 export type UserConfirmationData = {
     confirmationCode: string,
     expirationDate: Date,
     isConfirmed: boolean,
-
-    passwordRecoveryCode?: string
-    passwordRecoveryCodeExpirationDate?: Date
-    isPasswordRecoveryConfirmed?: boolean
-}
-
-export type UserAccountInfo = {
-    login: string,
-    email: string,
-    passwordHash: string,
-    createdAt: string
-}
-
-export type UserConfirmationInfo = {
-    confirmationCode: string,
-    expirationDate: Date,
-    isConfirmed: boolean
+    passwordRecoveryCode: string
 }
 
 

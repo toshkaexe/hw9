@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import {BlogDbModel} from "../models/blogs/blog-models";
 import {PostDbModel} from "../models/posts/posts-models";
-import {UserAccountInfo, UserConfirmationInfo, UserDbModel} from "../models/users/users-models";
+import {UserAccountData, UserConfirmationData, UserDbModel} from "../models/users/users-models";
 import {ObjectId} from "mongodb";
 import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
 import {TokenDbModel} from "../models/auth/auth-models";
@@ -31,25 +31,26 @@ const PostSchema
 export const PostMongoModel = mongoose.model('posts', PostSchema);
 
 //--------------------------------------------------------------------
-const UserAccountData =
-    new mongoose.Schema<UserAccountInfo>({
+const UserAccountInfo =
+    new mongoose.Schema<UserAccountData>({
         login: {type: String, required: true},
         email: {type: String, required: true},
         passwordHash: {type: String, required: true},
         createdAt: {type: String, required: true}
     },{_id: false});
 
-const UserConfirmationData =
-    new mongoose.Schema<UserConfirmationInfo>({
+const UserConfirmationInfo =
+    new mongoose.Schema<UserConfirmationData>({
         confirmationCode: {type: String, required: true},
         expirationDate: {type: Date, required: true},
-        isConfirmed: {type: Boolean, required: true}
+        isConfirmed: {type: Boolean, required: true},
+        passwordRecoveryCode: {type: String, required: true},
     },{_id: false});
 
 const userSchema =
     new mongoose.Schema<UserDbModel>({
-        userData : UserAccountData,
-        confirmationData: UserConfirmationData
+        userData : UserAccountInfo,
+        confirmationData: UserConfirmationInfo
     });
 export const UserMongoModel = mongoose.model('users', userSchema);
 
