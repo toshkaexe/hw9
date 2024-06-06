@@ -156,7 +156,6 @@ export class AuthService {
         const passwordHash = await BryptService.getHash(inputData.password)
 
         const user = {
-            // _id: new ObjectId(),
             userData: {
                 login: inputData.login,
                 email: inputData.email,
@@ -188,7 +187,7 @@ export class AuthService {
         <p>'${user.confirmationData.confirmationCode}'</p>
     `
         }
-        const createResult = await UsersRepository.createUser(user)
+        const createResult = await UsersRepository.saveNewUser(user)
         try {
             await EmailManager.sendEmailRecoveryMessage(emailData)
             console.log('письмо отправлено')

@@ -6,7 +6,7 @@ import {UserMongoModel} from "../db/schemas";
 export class UsersRepository {
 
 
-    static async createUser(newUser: UserDbModel): Promise<WithId<UserDbModel>> {
+    static async saveNewUser(newUser: UserDbModel): Promise<WithId<UserDbModel>> {
         const result = new UserMongoModel(newUser);
         await result.save()
         return result;

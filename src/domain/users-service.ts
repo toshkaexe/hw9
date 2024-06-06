@@ -35,7 +35,7 @@ export class UsersService {
                 isConfirmed: false
             }
         };
-        return userMapper(await UsersRepository.createUser(newUser))
+        return userMapper(await UsersRepository.saveNewUser(newUser))
    }
 
     static async deleteUser(id: string): Promise<boolean> {
