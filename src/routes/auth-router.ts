@@ -204,14 +204,14 @@ authRouter.post('/password-recovery',
     isEmailValidation(),
     async (req: RequestBody<{ email: string }>,
            res: Response) => {
-/*
+
         const emailPattern = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/
 
         const isEmailInvalid = req.body.email;
         if (!emailPattern.test(isEmailInvalid)) {
             return res.sendStatus(400);
         }
-*/
+
 
         const user = await AuthService.sendPasswordRecoveryEmail(req.body.email);
 
