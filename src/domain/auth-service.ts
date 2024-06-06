@@ -2,7 +2,7 @@ import {UsersRepository} from "../repositories/users-repositiory";
 import {ObjectId} from "mongodb";
 import {randomUUID} from "crypto";
 import {jwtService} from "./jwt-service";
-import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {ApiRequestModelDate} from "../models/devices/devices-models";
 import {SessionRepository} from "../repositories/session-repository";
 import {UsersService} from "./users-service";
 
@@ -16,7 +16,6 @@ import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
 import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
 import {BryptService} from "./brypt-service";
-
 
 
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
@@ -155,7 +154,7 @@ export class AuthService {
 
         const passwordHash = await BryptService.getHash(inputData.password)
 
-        const user = {
+        const user: UserDbModel = {
             userData: {
                 login: inputData.login,
                 email: inputData.email,
@@ -168,7 +167,8 @@ export class AuthService {
                     hours: 1,
                     minutes: 3
                 }),
-                isConfirmed: false
+                isConfirmed: false,
+                passwordRecoveryCode: "sad"
             }
         }
         const emailData = {
@@ -229,30 +229,18 @@ export class AuthService {
         const userToConfirm =
             await AuthQueryRepository.getUserByPasswordRecoveryConfirmationCode(recoveryCode)
 
-        if (!userToConfirm || userToConfirm.userData.passwordHash !== recoveryCode) {
+        console.log("userToConfrm = ", userToConfirm)
+
+        if (!userToConfirm) {
             return {
                 status: HTTP_STATUSES.BAD_REQUEST_400,
                 data: errorMessagesHandleService({message: 'Incorrect verification code', field: 'recoveryCode'}),
             }
         }
 
-        const plainUserToConfirm = userToConfirm.toObject()
+        userToConfirm.userData.passwordHash = await BryptService.getHash(newPassword);
 
-        //const passwordHash = await bcrypt.hash(newPassword, 10)
-        const passwordHash = await BryptService.getHash(newPassword);
-
-        const updatedUser: UserDbModel = {
-            userData: {
-                ...plainUserToConfirm.userData,
-                passwordHash
-            },
-            confirmationData: {
-                ...plainUserToConfirm.confirmationData,
-                isPasswordRecoveryConfirmed: true,
-            }
-        }
-
-        await UsersRepository.updateUser({'userData.email': userToConfirm.userData.email}, updatedUser)
+        await userToConfirm.save()
 
         return {
             status: 'SUCCESS',
@@ -272,21 +260,13 @@ export class AuthService {
         }
 
         user.confirmationData.passwordRecoveryCode = randomUUID();
-        user.confirmationData.passwordRecoveryCodeExpirationDate = add(new Date(),
+        user.confirmationData.expirationDate = add(new Date(),
             {
                 hours: 1,
-                minutes: 1,
+                minutes: 10,
             })
 
-        await UsersRepository.update(
-            user.userData.email,
-            randomUUID(),
-            add(new Date(),
-                {
-                    hours: 1,
-                    minutes: 1,
-                }));
-
+        await user.save()
         // готовим письмо
         const emailData = {
             email: user.userData.email,
