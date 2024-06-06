@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import {BlogDbModel} from "../models/blogs/blog-models";
 import {PostDbModel} from "../models/posts/posts-models";
-import {UserAccountInfo, UserConfirmationInfo, UserDbModel} from "../models/users/users-models";
+import {UserAccountInfo, UserConfirmationData, UserConfirmationInfo, UserDbModel} from "../models/users/users-models";
 import {ObjectId} from "mongodb";
 import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
 import {TokenDbModel} from "../models/auth/auth-models";
@@ -40,10 +40,11 @@ const UserAccountData =
     },{_id: false});
 
 const UserConfirmationData =
-    new mongoose.Schema<UserConfirmationInfo>({
+    new mongoose.Schema<UserConfirmationData>({
         confirmationCode: {type: String, required: true},
         expirationDate: {type: Date, required: true},
-        isConfirmed: {type: Boolean, required: true}
+        isConfirmed: {type: Boolean, required: true},
+        passwordRecoveryCode: {type: String, required: true}
     },{_id: false});
 
 const userSchema =

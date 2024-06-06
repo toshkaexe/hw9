@@ -2,21 +2,19 @@ import {UsersRepository} from "../repositories/users-repositiory";
 import {ObjectId} from "mongodb";
 import {randomUUID} from "crypto";
 import {jwtService} from "./jwt-service";
-import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {ApiRequestModelDate} from "../models/devices/devices-models";
 import {SessionRepository} from "../repositories/session-repository";
 import {UsersService} from "./users-service";
 
 import {RequestApiRepository} from "../repositories/request-api-repository";
 import {add} from "date-fns/add";
 import {EmailManager} from "../managers/email-manager";
-import {CreateUserInputModel, UserDbModel} from "../models/users/users-models";
+import {CreateUserInputModel} from "../models/users/users-models";
 import bcrypt from "bcrypt";
 import {LoginInputModel} from "../models/auth/auth-models";
-import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
-import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
 import {BryptService} from "./brypt-service";
-
+import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
 
 
 const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
@@ -168,12 +166,13 @@ export class AuthService {
                     hours: 1,
                     minutes: 3
                 }),
-                isConfirmed: false
+                isConfirmed: false,
+                passwordRecoveryCode: "sad"
             }
         }
         const emailData = {
             email: inputData.email,
-            subject: 'email confirmation',
+            subject: 'Email confirmation',
             message: `
         <h1>Thanks for your registration</h1>
         <p>
@@ -226,38 +225,34 @@ export class AuthService {
     }
 
     static async recoverUserPassword(newPassword: string, recoveryCode: string) {
-        const userToConfirm =
-            await AuthQueryRepository.getUserByPasswordRecoveryConfirmationCode(recoveryCode)
+        const user =
+            await UsersRepository.getUserByPasswordRecoveryConfirmationCode(recoveryCode)
 
-        if (!userToConfirm || userToConfirm.userData.passwordHash !== recoveryCode) {
+        console.log(user)
+
+
+        if (!user) {
             return {
-                status: HTTP_STATUSES.BAD_REQUEST_400,
-                data: errorMessagesHandleService({message: 'Incorrect verification code', field: 'recoveryCode'}),
+                status: HTTP_STATUSES.NO_CONTENT_204//,
+              //  data: errorMessagesHandleService({message: 'Incorrect verification code', field: 'recoveryCode'}),
             }
         }
 
-        const plainUserToConfirm = userToConfirm.toObject()
 
-        //const passwordHash = await bcrypt.hash(newPassword, 10)
-        const passwordHash = await BryptService.getHash(newPassword);
-
-        const updatedUser: UserDbModel = {
-            userData: {
-                ...plainUserToConfirm.userData,
-                passwordHash
-            },
-            confirmationData: {
-                ...plainUserToConfirm.confirmationData,
-                isPasswordRecoveryConfirmed: true,
+        if (user.userData.passwordHash !== newPassword) {
+            return {
+                status: HTTP_STATUSES.BAD_REQUEST_400//,
+               // data: errorMessagesHandleService({message: 'Incorrect verification code', field: 'recoveryCode'}),
             }
         }
 
-        await UsersRepository.updateUser({'userData.email': userToConfirm.userData.email}, updatedUser)
 
-        return {
-            status: 'SUCCESS',
-            data: null,
-        }
+
+        user.userData.passwordHash = await BryptService.getHash(newPassword);
+        await user.save()
+
+        return user;
+
     }
 
 
@@ -265,27 +260,17 @@ export class AuthService {
         const user =
             await UsersRepository.findByLoginOrEmail(email)
 
-
         if (!user) {
-            console.log("we do not have this user");
-            return false;
+            return false
         }
 
         user.confirmationData.passwordRecoveryCode = randomUUID();
-        user.confirmationData.passwordRecoveryCodeExpirationDate = add(new Date(),
+        user.confirmationData.expirationDate = add(new Date(),
             {
                 hours: 1,
                 minutes: 1,
             })
-
-        await UsersRepository.update(
-            user.userData.email,
-            randomUUID(),
-            add(new Date(),
-                {
-                    hours: 1,
-                    minutes: 1,
-                }));
+        await user.save();
 
         // готовим письмо
         const emailData = {
@@ -295,6 +280,8 @@ export class AuthService {
        <p>To finish password recovery please follow the link below:
           <a href='https://somesite.com/password-recovery?recoveryCode=${user.confirmationData.passwordRecoveryCode}'>
           recovery password</a>
+          
+          ${user.confirmationData.passwordRecoveryCode}
       </p>`
         };
 

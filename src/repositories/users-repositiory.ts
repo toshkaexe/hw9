@@ -65,6 +65,8 @@ export class UsersRepository {
     static async findUserByConfirmationCode(code: string) {
         const user = await UserMongoModel.findOne(
             {'emailConfirmation.confirmationCode': code})
+
+
         return user ? user : null
     }
 
@@ -82,6 +84,14 @@ export class UsersRepository {
                 "confirmationData.expirationDate": data,
             }
         })
+
+    }
+
+
+    static async getUserByPasswordRecoveryConfirmationCode(recoveryCode: string) {
+        const user = await UserMongoModel.findOne({'confirmationData.passwordRecoveryCode': recoveryCode})
+       // user.save()
+        return user;
 
     }
 

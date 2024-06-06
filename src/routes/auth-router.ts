@@ -191,9 +191,6 @@ authRouter.post('/new-password',
         const recoveryResult =
             await AuthService.recoverUserPassword(req.body.newPassword, req.body.recoveryCode)
 
-        if (recoveryResult.status === HTTP_STATUSES.BAD_REQUEST_400) {
-            return res.status(HTTP_STATUSES.BAD_REQUEST_400).send(recoveryResult.data)
-        }
 
         return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
     });

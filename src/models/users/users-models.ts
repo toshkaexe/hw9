@@ -19,10 +19,7 @@ export type UserConfirmationData = {
     confirmationCode: string,
     expirationDate: Date,
     isConfirmed: boolean,
-
-    passwordRecoveryCode?: string
-    passwordRecoveryCodeExpirationDate?: Date
-    isPasswordRecoveryConfirmed?: boolean
+    passwordRecoveryCode: string
 }
 
 export type UserAccountInfo = {
@@ -35,7 +32,8 @@ export type UserAccountInfo = {
 export type UserConfirmationInfo = {
     confirmationCode: string,
     expirationDate: Date,
-    isConfirmed: boolean
+    isConfirmed: boolean,
+    passwordRecoveryCode: string
 }
 
 
