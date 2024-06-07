@@ -1,5 +1,10 @@
 import {Request} from "express";
 
+export enum LikeStatus {
+    NONE = "None",
+    LIKE = "Like",
+    DISLIKE = "Dislike"
+}
 export const AvailableResolutions = [
     "P144",
     "P240",
