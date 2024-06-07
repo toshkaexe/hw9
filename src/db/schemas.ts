@@ -6,7 +6,19 @@ import {ObjectId} from "mongodb";
 import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
 import {TokenDbModel} from "../models/auth/auth-models";
 import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
+import {LikeStatus} from "../models/common";
+import {LikesDBModel} from "../models/likes/likes-model";
 
+
+const likeSchema=
+new mongoose.Schema<LikesDBModel>({
+    createAt: {type: Date, required: true},
+    status: {type: String, required: true},
+    authorId: {type: String, required: true},
+    parentId: {type: String, required: true}
+});
+export const LikesMongoModel =
+    mongoose.model('likes', likeSchema);
 
 const blogSchema
     = new mongoose.Schema<BlogDbModel>({
@@ -37,7 +49,7 @@ const UserAccountInfo =
         email: {type: String, required: true},
         passwordHash: {type: String, required: true},
         createdAt: {type: String, required: true}
-    },{_id: false});
+    }, {_id: false});
 
 const UserConfirmationInfo =
     new mongoose.Schema<UserConfirmationData>({
@@ -45,15 +57,14 @@ const UserConfirmationInfo =
         expirationDate: {type: Date, required: true},
         isConfirmed: {type: Boolean, required: true},
         passwordRecoveryCode: {type: String, required: true},
-    },{_id: false});
+    }, {_id: false});
 
 const userSchema =
     new mongoose.Schema<UserDbModel>({
-        userData : UserAccountInfo,
+        userData: UserAccountInfo,
         confirmationData: UserConfirmationInfo
     });
 export const UserMongoModel = mongoose.model('users', userSchema);
-
 
 
 //-----------------------------------------------------------------------------------------------------------------------
