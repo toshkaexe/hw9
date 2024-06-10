@@ -3,7 +3,7 @@ import {BlogDbModel} from "../models/blogs/blog-models";
 import {PostDbModel} from "../models/posts/posts-models";
 import {UserAccountData, UserConfirmationData, UserDbModel} from "../models/users/users-models";
 import {ObjectId} from "mongodb";
-import {CommentatorInfoModel, CommentDbModel} from "../models/comments/comment-model";
+import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model";
 import {TokenDbModel} from "../models/auth/auth-models";
 import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
 import {LikeStatus} from "../models/common";
@@ -15,7 +15,7 @@ new mongoose.Schema<LikesDBModel>({
     createAt: {type: Date, required: true},
     status: {type: String, required: true},
     authorId: {type: String, required: true},
-    parentId: {type: String, required: true}
+    commentId: {type: String, required: true}
 });
 export const LikesMongoModel =
     mongoose.model('likes', likeSchema);
@@ -69,10 +69,10 @@ export const UserMongoModel = mongoose.model('users', userSchema);
 
 //-----------------------------------------------------------------------------------------------------------------------
 const CommentatorSchema =
-    new mongoose.Schema<CommentatorInfoModel>({
+    new mongoose.Schema<CommentatorInfo>({
         userId: {type: String, required: true},
         userLogin: {type: String, required: true}
-    });
+    },{_id: false});
 
 const commentSchema =
     new mongoose.Schema<CommentDbModel>({

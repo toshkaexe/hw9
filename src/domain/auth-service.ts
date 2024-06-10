@@ -18,8 +18,8 @@ import {AuthQueryRepository} from "../repositories/auth-query-repository";
 import {BryptService} from "./brypt-service";
 
 
-const expiresAccessTokenTime = '10s'//process.env.ACCESS_TOKEN_TIME;
-const expiresRefreshTokenTime = '20s'; //process.env.REFRESH_TOKEN_TIME;
+const expiresAccessTokenTime = '10h'//process.env.ACCESS_TOKEN_TIME;
+const expiresRefreshTokenTime = '20h'; //process.env.REFRESH_TOKEN_TIME;
 
 const objects: any[] = [];
 const userRepository = new UsersRepository();

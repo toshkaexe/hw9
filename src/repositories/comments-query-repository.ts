@@ -1,4 +1,4 @@
-import {CommentatorInfoModel, CommentDbModel, commentMapper} from "../models/comments/comment-model";
+import {CommentDbModel, commentMapper} from "../models/comments/comment-model";
 
 import {ObjectId, WithId} from "mongodb";
 import {CommentMongoModel} from "../db/schemas";

@@ -8,13 +8,7 @@ export type BlogDbModel = {
     createdAt: string
     isMembership: boolean
 }
-export type CreateBlogModel = {
-    name: string,
-    description: string,
-    websiteUrl: string
-    createdAt: string,
-    isMembership: boolean
-}
+
 
 export type CreateBlogInputModel = {
     name: string,
@@ -44,6 +38,14 @@ export type Paginator<OutputBlogModel> = {
     pageSize: number
     totalCount: number
     items:	OutputBlogModel[]
+}
+
+export type CreateBlogModel = {
+    name: string,
+    description: string,
+    websiteUrl: string
+    createdAt: string,
+    isMembership: boolean
 }
 
 export const blogMapper = (blog: WithId<CreateBlogModel>):
