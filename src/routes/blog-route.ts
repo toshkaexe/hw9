@@ -75,10 +75,13 @@ blogRoute.post('/:blogId/posts',
     authMiddleware,
     blogValidationPostToBlog(),
     async (req: Request, res: Response) => {
-        const newPostId = await PostsService.createPost({blogId: req.params.blogId, ...req.body})
+        const newPostId =
+            await PostsService.createPost({blogId: req.params.blogId, ...req.body})
         if (!newPostId) return res.sendStatus(404);
 
-        const newPost = await PostsQueryRepository.findPostById(newPostId)
+        const newPost =
+            await PostsQueryRepository.findPostById(newPostId.toString())
+
         if (!newPost) {
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }

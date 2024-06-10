@@ -8,18 +8,22 @@ import {postMapper} from "../models/posts/posts-models";
 import {PostMongoModel} from "../db/schemas";
 
 export class PostsRepository {
-    static async createPost(data: CreatePostModel) {
+    static async savePost(data: CreatePostModel) {
         const createdAt = new Date();
         const blog = await BlogRepository.getBlogById(data.blogId);
 
+        console.log("createPost = ", blog)
         if (blog) {
             const newPost = {
                 ...data,
                 blogName: blog.name,
                 createdAt: createdAt.toISOString()
             }
-            const result = await PostMongoModel.create(newPost);
-            return result.toString();
+            console.log("newPost= ", newPost)
+            //const result = await PostMongoModel.create(newPost);
+            const result =  new PostMongoModel(newPost)
+            await result.save();
+            return result;
         } else {
             return null;
         }

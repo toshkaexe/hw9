@@ -8,11 +8,14 @@ const blogIdValidation = body("blogId")
     .custom(async (value) => {
         const blog = await BlogRepository.getBlogById(value);
 
+        console.log("--------------->", blog)
+
         if (!blog ) {
 
             throw new Error("Blog is not exist")
         }
-            return true;
+        console.log("is everything fine")
+            //return true;
 
     })
     .withMessage("Incorrect blogId");

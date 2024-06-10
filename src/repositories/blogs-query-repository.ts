@@ -11,7 +11,8 @@ export class BlogsQueryRepository {
                            pageSize: number,
                            sortBy: string,
                            sortDirection: string,
-                           searchNameTerm: string | null,): Promise<Paginator<BlogViewModel>> {
+                           searchNameTerm: string | null,):
+        Promise<Paginator<BlogViewModel>> {
 
         let searchNameFilter = {}
         if (searchNameTerm) {
@@ -25,7 +26,10 @@ export class BlogsQueryRepository {
         if (sortDirection === "asc") {
             sortOptions[sortBy] = 1
         }
+        console.log("----------totalCount---")
         const totalCount = await BlogMongoModel.countDocuments(searchNameFilter)
+        console.log("totalCoult", totalCount)
+
         const pagesCount = Math.ceil(totalCount / +pageSize)
         const scip = (+page - 1) * +pageSize
         const blogs = await BlogMongoModel
@@ -80,9 +84,11 @@ export class BlogsQueryRepository {
     }
 
     static async findBlogById(id: string): Promise<BlogViewModel | null> {
-        if (!ObjectId.isValid(id)) return null
-        const blog: WithId<BlogDbModel> | null = await BlogMongoModel.findOne(
-            {_id: new ObjectId(id)})
+
+        console.log("start in findBlogById")
+      //  if (!ObjectId.isValid(id)) return null
+        const blog: WithId<BlogDbModel> | null = await BlogMongoModel.findById(id)
+        console.log("blog---",blog)
         return blog ? blogMapper(blog) : null
     }
 

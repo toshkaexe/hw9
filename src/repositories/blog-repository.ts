@@ -55,8 +55,13 @@ export class BlogRepository {
 
     static async getBlogById(id: string): Promise<BlogViewModel | null> {
         if (id == null) return null;
+        console.log("---------> getBlogById id=", id)
         try {
-            const blog = await BlogMongoModel.findOne({_id: new ObjectId(id)});
+            const blog =
+                await BlogMongoModel.findById(id)
+                //await BlogMongoModel.findOne({_id: new ObjectId(id)});
+
+         console.log("blog-YYYYYY", blog)
             if (!blog) {
                 return null
             }

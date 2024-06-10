@@ -1,5 +1,6 @@
 import {body} from "express-validator";
 import {inputValidation} from "./input-validation";
+import {LikeStatus} from "../models/common";
 
 export const validateComments =
           body('content')
@@ -11,5 +12,19 @@ export const validateComments =
 
 export const validateContents = ()=> [
     validateComments,
+    inputValidation
+]
+
+export const validateLikeContent =
+    body('content')
+        .isString()
+        .trim()
+        .notEmpty()
+        .withMessage('Content must not be empty')
+        .isIn(Object.values(LikeStatus))
+        .withMessage('Content must be one of "None", "Like", or "Dislike"')
+
+export const validateLikeStatus = ()=> [
+    validateLikeContent,
     inputValidation
 ]
