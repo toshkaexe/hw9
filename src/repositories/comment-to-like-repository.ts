@@ -1,4 +1,4 @@
-import {HelpLikesInfo, UserIDS} from "../models/likes/likes-model";
+import {HelpLikesInfo} from "../models/likes/likes-model";
 import {HelpLikesInfoMongoModel} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
@@ -19,7 +19,7 @@ export class CommentToLikeRepository {
     }
 
 
-    static async hasLikefromUser(id: string, userId: string) {
+    static async InUserInLikeArray(id: string, userId: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id, likes: userId})
@@ -30,7 +30,7 @@ export class CommentToLikeRepository {
         }
     }
 
-    static async hasDislikefromUser(id: string, userId: string) {
+    static async IsUserInDislikeArray(id: string, userId: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id, dislikes: userId})
@@ -42,7 +42,7 @@ export class CommentToLikeRepository {
     }
 
 
-    static async removeUserDislikefromUser(id: string, userId: string) {
+    static async removeUserDislikeFromUser(id: string, userId: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel
@@ -57,7 +57,7 @@ export class CommentToLikeRepository {
         }
     }
 
-    static async removeUserLikefromUser(id: string, userId: string) {
+    static async removeUserLikeFromUser(id: string, userId: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel
@@ -83,7 +83,7 @@ export class CommentToLikeRepository {
                             {commentId: commentId},
                             {$push: {likes: userId}});
                 console.log("comment like = ", comment)
-                return !!comment;// Return true if a document exists, false otherwise
+                return !!comment;// Return "true" if a document exists, "false" otherwise
             } else {
                 const comment =
                     await HelpLikesInfoMongoModel
@@ -91,7 +91,7 @@ export class CommentToLikeRepository {
                             {commentId: commentId},
                             {$push: {dislikes: userId}});
                 console.log("comment dislike= ", comment)
-                return !!comment;// Return true if a document exists, "false" otherwise
+                return !!comment;// Return "true" if a document exists, "false" otherwise
             }
         } catch (error) {
             console.log(error)
@@ -107,6 +107,35 @@ export class CommentToLikeRepository {
         } catch (error) {
             console.log(error)
             return null
+        }
+    }
+
+    static async getLikesCount(id: string) {
+        try {
+            const comment =
+                await HelpLikesInfoMongoModel.findOne({commentId: id})
+            if (!comment){
+                return  0
+            }
+            return comment.likes.length;
+        } catch (error) {
+            console.log(error)
+            return 0;
+        }
+
+    }
+
+    static async getDislikesCount(id: string) {
+        try {
+            const comment =
+                await HelpLikesInfoMongoModel.findOne({commentId: id})
+            if (!comment){
+                return  0;
+            }
+            return comment.dislikes.length;
+        } catch (error) {
+            console.log(error)
+            return 0;
         }
     }
 

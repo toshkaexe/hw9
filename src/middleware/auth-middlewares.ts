@@ -6,6 +6,7 @@ import {UsersService} from "../domain/users-service";
 import {jwtService} from "../domain/jwt-service";
 import {UserViewModel} from "../models/users/users-models";
 import {SessionRepository} from "../repositories/session-repository";
+import {UserMongoModel} from "../db/schemas";
 
 
 dotenv.config()
@@ -75,7 +76,7 @@ export const bearerAuth = async (req: Request,
         console.log(auth);
 
        if (!auth) {
-           return res.send(HTTP_STATUSES.NOT_AUTHORIZED_401)
+           return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
        }
        const token = auth.split(' ')[1]  //bearer fasdfasdfasdf
 
@@ -85,10 +86,11 @@ export const bearerAuth = async (req: Request,
        if (!userIdAndDeviceId) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
        if (!ObjectId.isValid(userIdAndDeviceId.userId)) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
-       const user: UserViewModel | null = await UsersService.findUserById(userIdAndDeviceId.userId)
+       const user: UserViewModel | null = await UserMongoModel.findById(userIdAndDeviceId.userId)
 
 
-     const session = await SessionRepository.findSessionByUserIdAndDeviceId(
+     const session =
+         await SessionRepository.findSessionByUserIdAndDeviceId(
          userIdAndDeviceId!.userId.toString(),
          userIdAndDeviceId!.deviceId
      )
@@ -103,7 +105,7 @@ export const bearerAuth = async (req: Request,
    }
    catch (e)
    {
-       console.log("bearere + ",e)
+       console.log("error in + ",e)
    }
 }
 

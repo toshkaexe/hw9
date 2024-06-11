@@ -9,7 +9,7 @@ import {
 } from "../models/common";
 import {randomUUID} from "crypto";
 import {blogRoute} from "./blog-route";
-import {CreatePostModel, OutputPostModel} from "../models/posts/posts-models";
+import {CreatePostModel, OutputPostModel, postMapper} from "../models/posts/posts-models";
 import {postValidation} from "../validators/post-validation";
 import {db} from "../db/db";
 import {getPageOptions} from "../types/type";
@@ -19,15 +19,11 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {BlogViewModel} from "../models/blogs/blog-models";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
-import {CommentDbModel, CommentViewModel} from "../models/comments/comment-model";
-import {validateComments, validateContents} from "../validators/comments-validation";
+import {validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
-import {UsersRepository} from "../repositories/users-repositiory";
-import {LikesDBModel} from "../models/likes/likes-model";
 import {PostMongoModel, UserMongoModel} from "../db/schemas";
-import {encodeWord} from "nodemailer/lib/mime-funcs";
+
 import {jwtService} from "../domain/jwt-service";
-import {SessionRepository} from "../repositories/session-repository";
 
 export const postRoute = Router({})
 
@@ -57,7 +53,7 @@ postRoute.post('/',
         /*   newPost ? res.status(HTTP_STATUSES.CREATED_201).send(newPost) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
      */
-        res.status(HTTP_STATUSES.CREATED_201).send(newPostId.toString())
+        res.status(HTTP_STATUSES.CREATED_201).send(postMapper( newPostId))
 
         return
     })
@@ -138,7 +134,8 @@ postRoute.post('/:postId/comments',
                 return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         } catch (error) {
             console.log("Error in postId, does not exist")
-            return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+        //    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+            return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
         // из кук достаем userId
 

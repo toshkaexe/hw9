@@ -49,7 +49,8 @@ export type Paginator<OutputPostModel> = {
     totalCount: number
     items: OutputPostModel[]
 }
-export const postMapper = (post: WithId<CreatePostModel>): OutputPostModel => {
+export const postMapper = (post: WithId<CreatePostModel>):
+    OutputPostModel => {
     return {
         id: post._id.toString(),
         title: post.title,

@@ -25,7 +25,7 @@ export class PostsService {
         }
         console.log("in create Post")
         const post = await PostsRepository.savePost(newPost);
-        return post!._id
+        return post
     };
 
     static async updatePost(postId: string, body: UpdatePostModel) {

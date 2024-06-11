@@ -33,7 +33,7 @@ app.use(express.json())
 
 app.use(bodyParser.json())
 app.get('/', (req, res) => {
-    res.send("Homework 10")
+    res.send("Homework 11 Likes for comments")
 })
 app.get('/env', (req, res) => {
     res.send({

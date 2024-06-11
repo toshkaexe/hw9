@@ -1,5 +1,5 @@
-
 import {WithId} from "mongodb";
+import {CreatePostModel} from "../posts/posts-models";
 
 export type BlogDbModel = {
     name: string
@@ -37,7 +37,7 @@ export type Paginator<OutputBlogModel> = {
     page: number
     pageSize: number
     totalCount: number
-    items:	OutputBlogModel[]
+    items: OutputBlogModel[]
 }
 
 export type CreateBlogModel = {
@@ -60,19 +60,24 @@ export const blogMapper = (blog: WithId<CreateBlogModel>):
     }
 }
 
-export type BlogInputModel = {
-    /**
-     * max length 15
-     */
-    name: string
-    /**
-     * max length 500
-     */
-    description: string
-    /**
-     * max length 100
-     * pattern: ^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$
-     */
-    websiteUrl: string
-}
 
+export type PostViewModel = {
+    id: string,
+    title: string,
+    shortDescription: string,
+    content: string,
+    blogId: string,
+    blogName: string,
+    createdAt: string
+}
+export const postToBlogMapper = (blog: WithId<CreatePostModel>): PostViewModel=> {
+    return {
+        id: blog._id.toString(),
+        title: blog.title,
+        shortDescription: blog.shortDescription,
+        content: blog.content,
+        blogId: blog.blogId,
+        blogName: blog.blogName,
+        createdAt: blog.createdAt
+    }
+}
