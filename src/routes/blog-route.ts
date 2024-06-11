@@ -1,19 +1,21 @@
 import {Router, Request, Response} from 'express';
-import {BlogRepository} from "../repositories/blog-repository";
+
 import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
 import {blogValidation, blogValidationPostToBlog, nameValidation} from "../validators/blog-validation";
-import {randomUUID} from "crypto";
-import {db} from '../db/db'
-import {HTTP_STATUSES
+
+import {
+    HTTP_STATUSES
 } from "../models/common";
-import {CreateBlogModel, BlogViewModel, Paginator} from "../models/blogs/blog-models";
-import {ObjectId} from "mongodb";
+import {BlogViewModel, Paginator, postToBlogMapper} from "../models/blogs/blog-models";
+
 import {BlogService} from "../domain/blog-service";
 import {getPageOptions} from "../types/type";
 import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
-import {postValidation} from "../validators/post-validation";
+
 import {PostsService} from "../domain/posts-service";
-import {PostsQueryRepository} from "../repositories/posts-query-repository";
+
+import {BlogMongoModel} from "../db/schemas";
+import {CreatePostInputModel, postMapper} from "../models/posts/posts-models";
 
 
 export const blogRoute = Router({})
@@ -21,15 +23,14 @@ export const blogRoute = Router({})
 blogRoute.get('/',
 
     async (req: Request, res: Response): Promise<void> => {
-        const { pageNumber, pageSize, sortBy, sortDirection } = getPageOptions(req.query);
+        const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
         const searchNameTerm = req.query.searchNameTerm ? req.query.searchNameTerm.toString() : null
 
         const foundBlogs: Paginator<BlogViewModel> = await
             BlogsQueryRepository.findBlogs(pageNumber, pageSize,
-            sortBy, sortDirection, searchNameTerm)
+                sortBy, sortDirection, searchNameTerm)
         res.send(foundBlogs)
     })
-
 
 
 blogRoute.get('/:blogId',
@@ -50,7 +51,7 @@ blogRoute.get('/:blogId/posts',
             res.sendStatus(404)
             return
         }
-        const { pageNumber, pageSize, sortBy, sortDirection } = getPageOptions(req.query);
+        const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
 
         const posts = await BlogsQueryRepository.getPostsToBlog(req.params.blogId, pageNumber, pageSize, sortBy, sortDirection)
         if (!posts) {
@@ -63,7 +64,6 @@ blogRoute.get('/:blogId/posts',
 
 blogRoute.post('/',
     authMiddleware,
-  //  bearerAuth,
     blogValidation(),
     async (req: Request, res: Response): Promise<void> => {
         const newBlog = await BlogService.createBlog(req.body)
@@ -75,17 +75,30 @@ blogRoute.post('/:blogId/posts',
     authMiddleware,
     blogValidationPostToBlog(),
     async (req: Request, res: Response) => {
-        const newPostId =
-            await PostsService.createPost({blogId: req.params.blogId, ...req.body})
-        if (!newPostId) return res.sendStatus(404);
+
+        //check if blogId exist
+        try {
+            const checkBlog = await BlogMongoModel.findById(
+                req.params.blogId)
+            if (!checkBlog) return res.status(HTTP_STATUSES.NOT_FOUND_404).send("blog does not exists")
+
+        } catch (error) {
+            console.log("Error", error)
+            return res.status(HTTP_STATUSES.NOT_FOUND_404).send("blog does not exists")
+        }
+
+        const post: CreatePostInputModel = {
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.params.blogId
+        }
 
         const newPost =
-            await PostsQueryRepository.findPostById(newPostId.toString())
+            await PostsService.createPost(post)
+        if (!newPost) return res.sendStatus(404);
 
-        if (!newPost) {
-            return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-        }
-        return res.status(HTTP_STATUSES.CREATED_201).send(newPost)
+        return res.status(HTTP_STATUSES.CREATED_201).send(postToBlogMapper(newPost))
     }
 )
 

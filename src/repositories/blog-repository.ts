@@ -12,7 +12,7 @@ export class BlogRepository {
     static async createBlog(newBlog: BlogDbModel) {
         const result = new BlogMongoModel(newBlog)
         await result.save()
-        return result._id;
+        return result;
     }
 
     static async updateBlog(id: string, blog: UpdateBlogModel): Promise<boolean> {

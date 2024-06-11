@@ -11,6 +11,7 @@ import {commentMapper, CommentViewModel} from "../models/comments/comment-model"
 import {CommentMongoModel} from "../db/schemas";
 import {jwtService} from "../domain/jwt-service";
 import {LikeService} from "../domain/like-service";
+import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
 
 
 export const commentsRoute = Router({})
@@ -31,7 +32,7 @@ commentsRoute.put('/:commentId',
 
 //set like status for a comment
 commentsRoute.put('/:commentId/like-status',
-    //bearerAuth,
+    bearerAuth,
     authMiddleware,
     validateLikeStatus(),
     async (req: Request, res: Response) => {
@@ -59,33 +60,13 @@ commentsRoute.put('/:commentId/like-status',
 
             // если юзер неавторизован, то не ставим лайки
             if (!userId)
-                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+                return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 
-                // заполняем массив с лайками от юзеров
-            //(likeStatus == LikeStatus.LIKE) {
-            console.log("in the if")
             await LikeService.pushLikeOrDislike(userId, commentId, likeStatus)
 
-
         } catch (error) {
-
-
+            console.log(error)
         }
-
-        // commentId
-        //
-        // const info: LikesDBModel = {
-        //     createAt: new Date(),
-        //     status: req.body.content,
-        //     authorId: req.params.toString(),
-        //     commentId: commentId
-        // }
-        //
-        // const saveLike = await CommentsService.saveLike(info);
-        // // const isUpdated = await CommentsService.UpdateComment(commentId, req.body, req.user!.userId.toString())
-        //
-        // // if (isUpdated === false) return res.sendStatus(HTTP_STATUSES.Forbidden_403);
-        // // if (!isUpdated) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         return res.sendStatus(HTTP_STATUSES.OK_200);
 
     })
@@ -112,8 +93,17 @@ commentsRoute.delete('/:commentId',
 commentsRoute.get('/:commentId',
     async (req: Request, res: Response) => {
         try {
-            const foundComment: CommentViewModel | null = await CommentMongoModel.findById(req.params.commentId)
+            const foundComment: CommentViewModel | null =
+                await CommentMongoModel.findById(req.params.commentId)
+
+            console.log("fountComment=", foundComment)
+            if (!foundComment) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+
+            foundComment.likesInfo.likesCount = await CommentToLikeRepository.getLikesCount(req.params.commentId)
+            foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getDislikesCount(req.params.commentId)
+
             return res.status(HTTP_STATUSES.OK_200).send(foundComment)
+
         } catch (error) {
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
