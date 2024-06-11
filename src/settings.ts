@@ -5,7 +5,7 @@ import {testingRoute} from "./routes/testing-route";
 import morganBody from "morgan-body";
 import bodyParser from "body-parser";
 import {authRouter} from "./routes/auth-router";
-import {usersRouter} from "./routes/users-route";
+import {userRouter} from "./routes/user-route";
 import {commentsRoute} from "./routes/comments-route";
 import {emailRoute} from "./routes/emailRoute";
 import {cookie} from "express-validator";
@@ -46,7 +46,7 @@ app.use('/posts', postRoute)
 app.use('/testing', testingRoute)
 
 app.use('/auth', authRouter)
-app.use('/users', usersRouter)
+app.use('/users', userRouter)
 app.use('/comments', commentsRoute)
 
 app.use('/email', emailRoute)
