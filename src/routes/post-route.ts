@@ -19,7 +19,7 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {BlogViewModel} from "../models/blogs/blog-models";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
-import {CommentDbModel, CommentOutputModel} from "../models/comments/comment-model";
+import {CommentDbModel, CommentViewModel} from "../models/comments/comment-model";
 import {validateComments, validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
 import {UsersRepository} from "../repositories/users-repositiory";
@@ -121,7 +121,6 @@ postRoute.get('/:postId/comments',
 
 // добавляем новый коммент
 postRoute.post('/:postId/comments',
-    //   bearerAuth,
     authMiddleware,
     validateContents(),
     async (req: Request, res: Response) => {

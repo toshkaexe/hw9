@@ -1,24 +1,24 @@
-import {CommentatorInfo, CommentDbModel, CommentOutputModel} from "../models/comments/comment-model";
+import {CommentatorInfo, CommentDbModel, CommentViewModel} from "../models/comments/comment-model";
 import {CommentsRepository} from "../repositories/comments-repository";
 import {OutputPostModel} from "../models/posts/posts-models";
 import {PostsQueryRepository} from "../repositories/posts-query-repository";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
-import {LikesDBModel, SetLike} from "../models/likes/likes-model";
+import {LikeCountInfo, LikesDBModel, SetLike} from "../models/likes/likes-model";
 import {LikesMongoModel} from "../db/schemas";
 
 export class CommentsService {
 
 
-    static async saveLike(info: LikesDBModel){
+    static async saveLike(info: LikesDBModel) {
         const result = new LikesMongoModel(info);
         await result.save();
     }
 
     static async UpdateComment(id: string, body: CommentDbModel, userId: string) {
-     const targetComment = await commentsQueryRepository.getCommentById(id)
+        const targetComment = await commentsQueryRepository.getCommentById(id)
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
-         await CommentsRepository.updateComment(id, body)
+        await CommentsRepository.updateComment(id, body)
         return true;
     }
 
@@ -27,12 +27,12 @@ export class CommentsService {
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
 
-       return await CommentsRepository.deleteComment(id)
+        return await CommentsRepository.deleteComment(id)
 
     }
 
     static async CreateComment(
-        userData: {userId: string, userLogin: string}, postId: string, content: string){
+        userData: { userId: string, userLogin: string }, postId: string, content: string) {
 
         //const post: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
         //console.log(post, 'its post')
@@ -44,14 +44,23 @@ export class CommentsService {
 
         }
 
+        const initialLike: LikeCountInfo = {
+            likesCount: 0,
+            dislikesCount: 0,
+            myStatus: "None"
+
+        }
+
+
         const newComment: CommentDbModel = {
             postId: postId,
             content: content,
             commentatorInfo: commentator,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            likesInfo: initialLike
         }
 
-        return  await CommentsRepository.saveComment(newComment)
+        return await CommentsRepository.saveComment(newComment)
 
     }
 }

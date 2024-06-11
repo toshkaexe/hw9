@@ -16,7 +16,7 @@ export const validateContents = ()=> [
 ]
 
 export const validateLikeContent =
-    body('content')
+    body('likeStatus')
         .isString()
         .trim()
         .notEmpty()

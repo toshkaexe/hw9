@@ -7,9 +7,28 @@ import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model"
 import {TokenDbModel} from "../models/auth/auth-models";
 import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
 import {LikeStatus} from "../models/common";
-import {LikesDBModel} from "../models/likes/likes-model";
+import {HelpLikesInfo, LikeCountInfo, LikesDBModel, UserIDS} from "../models/likes/likes-model";
+
+//------------------------------------------
+const UserCountSchema
+    = new mongoose.Schema<UserIDS>({
+    userId: { type: String, required: true }
+});
+
+// Define the HelpLikesInfo schema
+const HelpLikesInfoSchema
+    = new mongoose.Schema<HelpLikesInfo>({
+    commentId: { type: String, required: true },
+    likes: { type: [String], required: true },
+    dislikes: { type: [String], required: true }
+});
+
+// Create the Mongoose model for HelpLikesInfo
+export const HelpLikesInfoMongoModel =
+    mongoose.model('helplikesinfo', HelpLikesInfoSchema);
 
 
+//------------------------------------------------------------------------------------
 const likeSchema=
 new mongoose.Schema<LikesDBModel>({
     createAt: {type: Date, required: true},
@@ -74,15 +93,25 @@ const CommentatorSchema =
         userLogin: {type: String, required: true}
     },{_id: false});
 
-const commentSchema =
+const LikeInfoSchema =
+    new mongoose.Schema<LikeCountInfo>({
+        likesCount: {type: Number, required: true},
+        dislikesCount: {type: Number, required: true},
+        myStatus: {type: "String", required: true},
+    },{_id: false});
+
+const CommentSchema =
     new mongoose.Schema<CommentDbModel>({
         postId: {type: String, required: true},
         content: {type: String, required: true},
         commentatorInfo: CommentatorSchema,
-        createdAt: {type: String, required: true}
+        createdAt: {type: String, required: true},
+        likesInfo: LikeInfoSchema
     });
 export const CommentMongoModel =
-    mongoose.model('comments', commentSchema);
+    mongoose.model('comments', CommentSchema);
+
+
 
 //-----------------------------------------------------------------------------------------------------------------------
 const tokenSchema =

@@ -7,9 +7,9 @@ import {UsersService} from "../domain/users-service";
 import {validateUsers} from "../validators/user-validation";
 import {inputValidation} from "../validators/input-validation";
 
-export const usersRouter = Router({})
+export const userRouter = Router({})
 
-usersRouter.get('/',
+userRouter.get('/',
     authMiddleware,
     async (req: Request, res: Response) => {
         const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
@@ -23,7 +23,7 @@ usersRouter.get('/',
         return res.send(foundUsers)
     })
 
-usersRouter.post('/',
+userRouter.post('/',
     authMiddleware,
     validateUsers(),
     inputValidation,
@@ -33,7 +33,7 @@ usersRouter.post('/',
         res.status(HTTP_STATUSES.CREATED_201).send(newUser)
     })
 
-usersRouter.delete('/:id',
+userRouter.delete('/:id',
     authMiddleware,
     async (req: Request, res: Response) => {
         const isDeleted = await UsersService.deleteUser(req.params.id)
