@@ -27,73 +27,103 @@ export class LikeService {
             }
 
         } else {
+            const isUserIDinLikes = await CommentToLikeRepository.hasLikefromUser(commentId, userId);
+            const isUserIDinDisLikes = await CommentToLikeRepository.hasDislikefromUser(commentId, userId);
 
-            // get current status
+            switch (likeStatus) {
+                case LikeStatus.LIKE:
+                    console.log("isUserIDinLikes = ", isUserIDinLikes);
+                    console.log("isUserIDinDisLikes = ", isUserIDinDisLikes);
+                    if (!isUserIDinLikes && !isUserIDinDisLikes) {
+                        await CommentToLikeRepository.updateComment(commentId, userId, likeStatus);
+                    }
+                    if (isUserIDinLikes) {
+                        return;
+                    } else { // remove userId from dislike
+                        await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.LIKE);
+                        await CommentToLikeRepository.removeUserDislikefromUser(commentId, userId);
+                    }
+                    break;
 
-            if (likeStatus === LikeStatus.LIKE) {
+                case LikeStatus.DISLIKE:
+                    console.log("isUserIDinLikes = ", isUserIDinLikes);
+                    console.log("isUserIDinDisLikes = ", isUserIDinDisLikes);
+                    if (!isUserIDinLikes && !isUserIDinDisLikes) {
+                        await CommentToLikeRepository.updateComment(commentId, userId, likeStatus);
+                    }
+                    if (isUserIDinDisLikes) {
+                        return;
+                    } else { // remove userId from dislike
+                        await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.DISLIKE);
+                        await CommentToLikeRepository.removeUserLikefromUser(commentId, userId);
+                    }
+                    break;
 
-                const setUserLike =
-                    await CommentToLikeRepository.hasLikefromUser(
-                        commentId, userId);
-
-                const setUserDisLike =
-                    await CommentToLikeRepository.hasDislikefromUser(
-                        commentId, userId);
-
-                console.log("setUserLike = ", setUserLike)
-                console.log("setUserDisLike = ", setUserDisLike)
-
-                if (!setUserLike && !setUserDisLike) {
-                    await CommentToLikeRepository.updateComment(
-                        commentId, userId, likeStatus)
-                }
-
-                if (setUserLike) {
-                    return
-                } else { // remove userId from dislike
-                    await CommentToLikeRepository.updateComment(
-                        commentId, userId, LikeStatus.LIKE)
-                    await CommentToLikeRepository
-                        .removeUserDislikefromUser(commentId, userId)
-
-                }
-            }
-            if (likeStatus === LikeStatus.DISLIKE) {
-
-                const setUserLike =
-                    await CommentToLikeRepository.hasLikefromUser(
-                        commentId, userId);
-
-                const setUserDisLike =
-                    await CommentToLikeRepository.hasDislikefromUser(
-                        commentId, userId);
-
-                console.log("setUserLike = ", setUserLike)
-                console.log("setUserDisLike = ", setUserDisLike)
-
-                if (!setUserLike && !setUserDisLike) {
-                    await CommentToLikeRepository.updateComment(
-                        commentId, userId, likeStatus)
-                }
-
-                if (setUserDisLike) {
-                    return
-                } else { // remove userId from dislike
-                    await CommentToLikeRepository.updateComment(
-                        commentId, userId, LikeStatus.DISLIKE)
-                    await CommentToLikeRepository
-                        .removeUserLikefromUser(commentId, userId)
-
-
-                }
+                default:
+                    // handle default case if necessary
+                    break;
             }
 
+            // // get current status
+            //
+            // if (likeStatus === LikeStatus.LIKE) {
+            //
+            //     const isUserIDinLikes =
+            //         await CommentToLikeRepository.hasLikefromUser(
+            //             commentId, userId);
+            //
+            //     const isUserIDinDisLikes =
+            //         await CommentToLikeRepository.hasDislikefromUser(
+            //             commentId, userId);
+            //
+            //     console.log("isUserIDinLikes = ", isUserIDinLikes)
+            //     console.log("isUserIDinDisLikes = ", isUserIDinDisLikes)
+            //
+            //     if (!isUserIDinLikes && !isUserIDinDisLikes) {
+            //         await CommentToLikeRepository.updateComment(
+            //             commentId, userId, likeStatus)
+            //     }
+            //
+            //     if (isUserIDinLikes) {
+            //         return
+            //     } else { // remove userId from dislike
+            //         await CommentToLikeRepository.updateComment(
+            //             commentId, userId, LikeStatus.LIKE)
+            //         await CommentToLikeRepository
+            //             .removeUserDislikefromUser(commentId, userId)
+            //
+            //     }
+            // }
+            // if (likeStatus === LikeStatus.DISLIKE) {
+            //
+            //     const isUserIDinLikes =
+            //         await CommentToLikeRepository.hasLikefromUser(
+            //             commentId, userId);
+            //
+            //     const isUserIDinDisLikes =
+            //         await CommentToLikeRepository.hasDislikefromUser(
+            //             commentId, userId);
+            //
+            //     console.log("isUserIDinLikes = ", isUserIDinLikes)
+            //     console.log("isUserIDinDisLikes = ", isUserIDinDisLikes)
+            //
+            //     if (!isUserIDinLikes && !isUserIDinDisLikes) {
+            //         await CommentToLikeRepository.updateComment(
+            //             commentId, userId, likeStatus)
+            //     }
+            //
+            //     if (isUserIDinDisLikes) {
+            //         return
+            //     } else { // remove userId from dislike
+            //         await CommentToLikeRepository.updateComment(
+            //             commentId, userId, LikeStatus.DISLIKE)
+            //         await CommentToLikeRepository
+            //             .removeUserLikefromUser(commentId, userId)
+            //
+            //
+            //     }
+            // }
 
-            //get current status of who where
-
-            //update number of likes/dislikes for the commentId in db
-            // const updateComment = await CommentToLikeRepository
-            //   .updateComment(commentId, userId, likeStatus)
         }
     }
 }
