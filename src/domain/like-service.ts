@@ -1,5 +1,4 @@
-import {HelpLikesInfo, UserIDS} from "../models/likes/likes-model";
-import {HelpLikesInfoMongoModel} from "../db/schemas";
+import {HelpLikesInfo} from "../models/likes/likes-model";
 import {LikeStatus} from "../models/common";
 import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
 
@@ -26,10 +25,75 @@ export class LikeService {
                 likeInfo.dislikes.push(userId);
                 await CommentToLikeRepository.saveInRepo(likeInfo)
             }
+
         } else {
+
+            // get current status
+
+            if (likeStatus === LikeStatus.LIKE) {
+
+                const setUserLike =
+                    await CommentToLikeRepository.hasLikefromUser(
+                        commentId, userId);
+
+                const setUserDisLike =
+                    await CommentToLikeRepository.hasDislikefromUser(
+                        commentId, userId);
+
+                console.log("setUserLike = ", setUserLike)
+                console.log("setUserDisLike = ", setUserDisLike)
+
+                if (!setUserLike && !setUserDisLike) {
+                    await CommentToLikeRepository.updateComment(
+                        commentId, userId, likeStatus)
+                }
+
+                if (setUserLike) {
+                    return
+                } else { // remove userId from dislike
+                    await CommentToLikeRepository.updateComment(
+                        commentId, userId, LikeStatus.LIKE)
+                    await CommentToLikeRepository
+                        .removeUserDislikefromUser(commentId, userId)
+
+                }
+            }
+            if (likeStatus === LikeStatus.DISLIKE) {
+
+                const setUserLike =
+                    await CommentToLikeRepository.hasLikefromUser(
+                        commentId, userId);
+
+                const setUserDisLike =
+                    await CommentToLikeRepository.hasDislikefromUser(
+                        commentId, userId);
+
+                console.log("setUserLike = ", setUserLike)
+                console.log("setUserDisLike = ", setUserDisLike)
+
+                if (!setUserLike && !setUserDisLike) {
+                    await CommentToLikeRepository.updateComment(
+                        commentId, userId, likeStatus)
+                }
+
+                if (setUserDisLike) {
+                    return
+                } else { // remove userId from dislike
+                    await CommentToLikeRepository.updateComment(
+                        commentId, userId, LikeStatus.DISLIKE)
+                    await CommentToLikeRepository
+                        .removeUserLikefromUser(commentId, userId)
+
+
+                }
+            }
+
+
+            //get current status of who where
+
             //update number of likes/dislikes for the commentId in db
-            const updateComment = await CommentToLikeRepository
-                .updateComment(commentId, userId, likeStatus)
+            // const updateComment = await CommentToLikeRepository
+            //   .updateComment(commentId, userId, likeStatus)
         }
     }
 }
