@@ -78,7 +78,7 @@ commentsRoute.put('/:commentId/like-status',
             console.log(error)
 
         }
-        return res.sendStatus(HTTP_STATUSES.OK_200);
+        return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
 
     })
 
