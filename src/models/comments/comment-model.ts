@@ -1,6 +1,4 @@
 import {WithId} from "mongodb";
-import {LikeCountInfo} from "../likes/likes-model";
-
 
 export type CommentatorInfo = {
     userId: string
@@ -8,35 +6,52 @@ export type CommentatorInfo = {
 }
 
 export type CommentDbModel = {
-    postId: string
+    //  postId: string
     content: string
-    commentatorInfo: CommentatorInfo
+    commentatorInfo: {
+        userId: string
+        userLogin: string
+    }
     createdAt: string
-    likesInfo: LikeCountInfo
+    likesInfo: {
+        likesCount: number,
+        dislikesCount: number,
+        myStatus: string
+    }
 }
 
 
 export type CommentViewModel = {
-    id: string
+    id: string,
     content: string
-    commentatorInfo: CommentatorInfo
+    commentatorInfo: {
+        userId: string
+        userLogin: string
+    }
     createdAt: string
-    likesInfo: LikeCountInfo
-}
-export const commentMapper =
-    (comment: WithId<CommentDbModel>): CommentViewModel => {
-    return {
-        id: comment._id.toString(),
-        content: comment.content,
-        commentatorInfo: {
-            userId: comment.commentatorInfo.userId,
-            userLogin: comment.commentatorInfo.userLogin,
-        },
-        createdAt: comment.createdAt,
-        likesInfo:
-            {likesCount: comment.likesInfo.likesCount,
-            dislikesCount: comment.likesInfo.dislikesCount,
-            myStatus: comment.likesInfo.myStatus
-            }
+    likesInfo: {
+        likesCount: number,
+        dislikesCount: number,
+        myStatus: string
     }
 }
+
+
+export const commentMapper =
+    (comment: WithId<CommentDbModel>): CommentViewModel => {
+        return {
+            id: comment._id.toString(),
+            content: comment.content,
+            commentatorInfo: {
+                userId: comment.commentatorInfo.userId,
+                userLogin: comment.commentatorInfo.userLogin,
+            },
+            createdAt: comment.createdAt,
+            likesInfo:
+                {
+                    likesCount: comment.likesInfo.likesCount,
+                    dislikesCount: comment.likesInfo.dislikesCount,
+                    myStatus: comment.likesInfo.myStatus
+                }
+        }
+    }

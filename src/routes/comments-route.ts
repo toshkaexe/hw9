@@ -3,15 +3,17 @@ import {HTTP_STATUSES, LikeStatus} from "../models/common";
 
 
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
-import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
+import {authMiddleware, bearerAuth, bearerAuthUserAuth} from "../middleware/auth-middlewares";
 import {validateComments, validateContents, validateLikeStatus} from "../validators/comments-validation";
 import {CommentsService} from "../domain/comments-service";
 import {LikesDBModel} from "../models/likes/likes-model";
-import {commentMapper, CommentViewModel} from "../models/comments/comment-model";
+import {CommentDbModel, commentMapper, CommentViewModel} from "../models/comments/comment-model";
 import {CommentMongoModel} from "../db/schemas";
 import {jwtService} from "../domain/jwt-service";
 import {LikeService} from "../domain/like-service";
 import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
+import {sessionMiddleware} from "../middleware/verify-token-in-cookie";
+import {WithId} from "mongodb";
 
 
 export const commentsRoute = Router({})
@@ -32,40 +34,49 @@ commentsRoute.put('/:commentId',
 
 //set like status for a comment
 commentsRoute.put('/:commentId/like-status',
-    bearerAuth,
-    authMiddleware,
+    bearerAuthUserAuth,
     validateLikeStatus(),
     async (req: Request, res: Response) => {
-        //достаем commentId
+
+
         const commentId = req.params.commentId  //считали из path
         console.log("commentId=", commentId)
-        const likeStatus = req.body.likeStatus;
-
-        console.log("likeStatus=", likeStatus)
-
-
-        // проверка действительно ли у нас есть данный commentId?
         try {
+            // проверка действительно ли у нас есть данный commentId?
+            //если коммент существует, то
             const isCommentExists =
                 await CommentMongoModel.findById(commentId)
             if (!isCommentExists)
                 return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
-            //если коммент существует, то
+            const likeStatus1 = req.body.likeStatus;
+            console.log("likeStatus=", likeStatus1)
             console.log("isCommentExists=", isCommentExists)
-            // из кук достаем userId
-            const refreshToken = req.cookies?.refreshToken;
-            const userId = await jwtService.userfromToken(refreshToken);
+
+            const token = req.headers['authorization']
+
+            if (!token) {
+                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+            }
+
+
+            const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+            console.log("token1: ", token1)
+            const userId = await jwtService.userfromToken(token1);
+            if (!userId) {
+                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+            }
             console.log("userId=", userId)
 
             // если юзер неавторизован, то не ставим лайки
             if (!userId)
                 return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 
-            await LikeService.pushLikeOrDislike(userId, commentId, likeStatus)
+            await LikeService.pushLikeOrDislike(userId, commentId, likeStatus1)
 
         } catch (error) {
             console.log(error)
+
         }
         return res.sendStatus(HTTP_STATUSES.OK_200);
 
@@ -93,7 +104,7 @@ commentsRoute.delete('/:commentId',
 commentsRoute.get('/:commentId',
     async (req: Request, res: Response) => {
         try {
-            const foundComment: CommentViewModel | null =
+            const foundComment: WithId<CommentDbModel> | null =
                 await CommentMongoModel.findById(req.params.commentId)
 
             console.log("fountComment=", foundComment)
@@ -102,7 +113,10 @@ commentsRoute.get('/:commentId',
             foundComment.likesInfo.likesCount = await CommentToLikeRepository.getLikesCount(req.params.commentId)
             foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getDislikesCount(req.params.commentId)
 
-            return res.status(HTTP_STATUSES.OK_200).send(foundComment)
+            console.log("foundComment ", foundComment)
+
+            return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
+
 
         } catch (error) {
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)

@@ -7,11 +7,10 @@ import {PostsRepository} from "../repositories/posts-repository";
 import {
     HTTP_STATUSES
 } from "../models/common";
-import {randomUUID} from "crypto";
-import {blogRoute} from "./blog-route";
+
 import {CreatePostModel, OutputPostModel, postMapper} from "../models/posts/posts-models";
 import {postValidation} from "../validators/post-validation";
-import {db} from "../db/db";
+
 import {getPageOptions} from "../types/type";
 import {PostsQueryRepository} from "../repositories/posts-query-repository";
 import {PostsService} from "../domain/posts-service";
@@ -19,11 +18,12 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {BlogViewModel} from "../models/blogs/blog-models";
 import {commentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
-import {validateContents} from "../validators/comments-validation";
+import {validateComments, validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
 import {PostMongoModel, UserMongoModel} from "../db/schemas";
 
 import {jwtService} from "../domain/jwt-service";
+import {commentMapper} from "../models/comments/comment-model";
 
 export const postRoute = Router({})
 
@@ -53,7 +53,7 @@ postRoute.post('/',
         /*   newPost ? res.status(HTTP_STATUSES.CREATED_201).send(newPost) :
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
      */
-        res.status(HTTP_STATUSES.CREATED_201).send(postMapper( newPostId))
+        res.status(HTTP_STATUSES.CREATED_201).send(postMapper(newPostId))
 
         return
     })
@@ -117,8 +117,7 @@ postRoute.get('/:postId/comments',
 
 // добавляем новый коммент
 postRoute.post('/:postId/comments',
-    authMiddleware,
-    validateContents(),
+      validateContents(),
     async (req: Request, res: Response) => {
 
         //достем парам postId
@@ -134,33 +133,42 @@ postRoute.post('/:postId/comments',
                 return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         } catch (error) {
             console.log("Error in postId, does not exist")
-        //    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
+            //    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
-        // из кук достаем userId
 
-        const refreshToken = req.cookies?.refreshToken;
-        console.log("refresh: ", refreshToken)
+
+        const token= req.headers['authorization']
+        console.log("auth=");
+        console.log(token);
+
+        if (!token) {
+            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+        }
+        const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+
+        //const userId = await jwtService.getUserIdAndDeviceId(token1)
+
+        console.log("token1: ", token1)
         try {
-            let userId = await jwtService.userfromToken(refreshToken);
+            let userId = await jwtService.userfromToken(token1);
 
             if (!userId) {
-                res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
-                return;
+              return  res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
             }
             console.log("userId = ", userId)
             const user = await UserMongoModel.findById(userId)
 
-            console.log("user = ", user!.userData.login)
-            console.log("email = ", user!.userData.email)
+            console.log("user = ", user)
+            //console.log("email = ", user
 
             const newComment =
                 await CommentsService.CreateComment(
                     {userId: userId, userLogin: user!.userData.login}, postId, content)
-            return res.status(HTTP_STATUSES.CREATED_201).send(newComment._id)
+            return res.status(HTTP_STATUSES.CREATED_201).send(commentMapper(newComment))
         } catch (error) {
-
-            return res.sendStatus(HTTP_STATUSES.InternalServerError_500);
+            console.log("error,", error)
+            return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
         }
     }
 )

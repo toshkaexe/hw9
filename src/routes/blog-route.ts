@@ -6,7 +6,7 @@ import {blogValidation, blogValidationPostToBlog, nameValidation} from "../valid
 import {
     HTTP_STATUSES
 } from "../models/common";
-import {BlogViewModel, Paginator, postToBlogMapper} from "../models/blogs/blog-models";
+import {blogMapper, BlogViewModel, Paginator, postToBlogMapper} from "../models/blogs/blog-models";
 
 import {BlogService} from "../domain/blog-service";
 import {getPageOptions} from "../types/type";
@@ -66,8 +66,9 @@ blogRoute.post('/',
     authMiddleware,
     blogValidation(),
     async (req: Request, res: Response): Promise<void> => {
-        const newBlog = await BlogService.createBlog(req.body)
-        res.status(HTTP_STATUSES.CREATED_201).send(newBlog)
+        const newBlog =
+            await BlogService.createBlog(req.body)
+        res.status(HTTP_STATUSES.CREATED_201).send(blogMapper(newBlog))
     })
 
 // create post for specified blog
@@ -78,8 +79,8 @@ blogRoute.post('/:blogId/posts',
 
         //check if blogId exist
         try {
-            const checkBlog = await BlogMongoModel.findById(
-                req.params.blogId)
+            const checkBlog
+                = await BlogMongoModel.findById(req.params.blogId)
             if (!checkBlog) return res.status(HTTP_STATUSES.NOT_FOUND_404).send("blog does not exists")
 
         } catch (error) {
