@@ -9,7 +9,7 @@ export class CommentsRepository {
 
         const result = new CommentMongoModel(newComment)
         await result.save()
-        return result._id;
+        return result;
 
     }
 

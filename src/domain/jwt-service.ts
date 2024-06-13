@@ -1,11 +1,12 @@
 import {ObjectId} from "mongodb";
 import jwt from 'jsonwebtoken';
 
+const secretKey = 'your_secret_key';
+
 export class jwtService {
     static async getUserIdAndDeviceId(token: string) {
-        const secretKey = 'your_secret_key';
-        try {
 
+        try {
             const result: any = jwt.verify(token, secretKey)
             if (!result) return null;
             const userId: ObjectId = new ObjectId(result.userId);
@@ -19,14 +20,15 @@ export class jwtService {
     }
 
     static async generateToken(payload: { deviceId: string, userId: string }, expiresIn: string) {
-        const secretKey = 'your_secret_key';
-        const sign = jwt.sign(payload, secretKey,
-            {expiresIn: expiresIn});
-        return sign
+
+        return jwt.sign(
+            payload,
+            secretKey,
+            {expiresIn: expiresIn})
     };
 
     static async userfromToken(refreshToken: any) {
-        const secretKey = 'your_secret_key';
+
         try {
             const res: any = jwt.verify(refreshToken, secretKey);
             return res.userId
@@ -46,7 +48,7 @@ export class jwtService {
     }
 
     static async generateRefreshToken(payload: any, expiresIn: string) {
-        const secretKey = 'your_secret_key';
+
         try {
             return jwt.sign(payload, secretKey, {expiresIn});
         } catch (error) {

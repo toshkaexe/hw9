@@ -36,24 +36,20 @@ export class CommentsService {
 
         //const post: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
         //console.log(post, 'its post')
-
         //if (!post) return null
+
         const commentator: CommentatorInfo = {
             userId: userData.userId,
             userLogin: userData.userLogin
-
         }
-
         const initialLike: LikeCountInfo = {
             likesCount: 0,
             dislikesCount: 0,
             myStatus: "None"
-
         }
 
-
         const newComment: CommentDbModel = {
-            postId: postId,
+            //postId: postId,
             content: content,
             commentatorInfo: commentator,
             createdAt: new Date().toISOString(),

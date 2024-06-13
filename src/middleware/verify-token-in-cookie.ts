@@ -31,6 +31,26 @@ export const verifyTokenInCookie = async (req: Request,
 };
 
 
+
+export const sessionMiddleware = async (req: Request,
+                                        res: Response,
+                                        next: NextFunction) => {
+
+
+    const refreshToken = req.cookies?.refreshToken;
+    const isRefreshTokenInBlackList =
+        await BlacklistService.isInBlacklist(refreshToken);
+
+    if (isRefreshTokenInBlackList ) {
+        return res.sendStatus(401)
+    }
+    if (!refreshToken) return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+
+    next();
+    return
+
+}
+
 export const logoutTokenInCookie = async (req: Request,
                                           res: Response,
                                           next: NextFunction) => {
