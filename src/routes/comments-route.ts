@@ -114,6 +114,7 @@ commentsRoute.get('/:commentId',
             foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getDislikesCount(req.params.commentId)
 
             console.log("foundComment ", foundComment)
+
             const token = req.headers['authorization']
             console.log("token = ", token);
             if (!token) {
@@ -131,7 +132,7 @@ commentsRoute.get('/:commentId',
             console.log("userId = ", userId);
 
             foundComment.likesInfo.myStatus =
-                await CommentToLikeRepository.getCurrentUserStatus(req.params.commentId, foundComment.commentatorInfo.userId)
+                await CommentToLikeRepository.getCurrentUserStatus(req.params.commentId, userId)
 
             return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
         } catch (error) {

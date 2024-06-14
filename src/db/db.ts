@@ -10,18 +10,13 @@ export const db: DBType = {
 }
 
 
-const dbName = process.env.DBNAME || 'blogs-hws';
-const mongoURI = process.env.MONGO_URI_CLOUD
-    || process.env.MONGO_URI_LOCAL
-    || 'mongodb+srv://antonzeltser:admin@cluster0.rmbeaqk.mongodb.net/'
-    || 'mongo://localhost:27017/';
+const dbName = 'blogs-hws';
+const mongoURI = 'mongodb+srv://antonzeltser:admin@cluster0.rmbeaqk.mongodb.net/'
+const port = 3000;
 
-
-const port = process.env.PORT;
-
-export async function runDB() {
+export async function runDBMongoose() {
     try {
-        await mongoose.connect(mongoURI +dbName);
+        await mongoose.connect(mongoURI! +dbName!);
         console.log('Connected successfully to mongo server!');
         console.log(`Example app listening on port: ${port}`)
     } catch (err) {

@@ -49,3 +49,76 @@ export const userMapper = (user: WithId<UserDbModel>): UserViewModel => {
         createdAt: user.userData.createdAt,
     }
 }
+
+export type UserType = {
+    accountData: AccountDataType
+    emailConfirmation: EmailConfirmationType
+    recoveryData: RecoveryDataType | null
+}
+
+
+export type AccountDataType = {
+    /**
+     * Set user`s login. Required. MaxLength: 10, minLength: 3.
+     */
+    login: string
+
+    /**
+     * Set user`s email, required.
+     */
+    email: string
+
+    /**
+     * Generated hash from salt and user password.
+     */
+    passwordHash: string
+
+    /**
+     * Created date of user.
+     */
+    createdAt: string
+}
+
+export type EmailConfirmationType = {
+    /**
+     * Code for confirm email
+     */
+    confirmationCode: string
+
+    /**
+     * Expiration date of confirmation link.
+     */
+    expirationDate: Date
+
+    /**
+     * Is confirmed email registered user.
+     */
+    isConfirmed: boolean
+}
+
+export type RecoveryDataType = {
+    /**
+     * Code for recovery password
+     */
+    recoveryCode: string
+
+    /**
+     * Expiration date of recovery link.
+     */
+    expirationDate: Date
+}
+export type GetUserOutputModel = UserType;
+
+export type GetUserOutputModelFromMongoDB = GetUserOutputModel & {
+    /**
+     * Inserted id user from mongodb
+     */
+    _id: ObjectId
+};
+
+export type GetMappedUserOutputModel = Omit<AccountDataType, 'passwordHash'> & {
+    /**
+     * Mapped id of user from db
+     */
+    id: string
+};

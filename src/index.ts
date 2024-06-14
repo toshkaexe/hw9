@@ -1,12 +1,12 @@
-import {app} from "./settings";
+import {app, AppSettings} from "./settings";
 import dotenv from "dotenv";
-import {runDB} from "./db/db";
+import {runDBMongoose} from "./db/db";
 dotenv.config();
 
 
-const port = 3000;
-const startApp =async ()=>{
-    await runDB()
+const port = AppSettings.PORT;
+export const startApp =async ()=>{
+    await runDBMongoose()
     app.listen(port,()=>{
         console.log(`Example app listening on port ${port}`)
     })
