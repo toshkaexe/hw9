@@ -16,10 +16,11 @@ import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
 import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
 import {BryptService} from "./brypt-service";
+import {AppSettings} from "../settings";
 
 
-const expiresAccessTokenTime = '10h' //  process.env.ACCESS_TOKEN_TIME;
-const expiresRefreshTokenTime= '10h' //process.env.REFRESH_TOKEN_TIME;
+const expiresAccessTokenTime =  '1h' //AppSettings.ACCESS_TOKEN_EXPIRES
+const expiresRefreshTokenTime= '1h' //AppSettings.REFRESH_TOKEN_EXPIRES
 
 const objects: any[] = [];
 const userRepository = new UsersRepository();

@@ -13,6 +13,27 @@ import cookieParser from "cookie-parser";
 import {deviceRoute} from "./routes/device-route";
 
 
+export const AppSettings = {
+
+    PORT: process.env.PORT,
+    ACCESS_TOKEN_EXPIRES: '1h',
+    REFRESH_TOKEN_EXPIRES: '1h',
+    MONGO_URI: process.env.MONGO_URI_CLOUD,
+    DB_NAME: process.env.DB_NAME
+    }
+
+export const RoutesList = {
+    BASE: '/',
+    BLOGS: '/blogs',
+    POSTS: '/posts',
+    USERS: '/users',
+    AUTH: '/auth',
+    DEVICES: '/security/devices',
+    COMMENTS: '/comments',
+    VERSION: '/version',
+    TESTING: '/testing',
+}
+
 
 export const RouterPaths = {
     blogs: '/blogs',

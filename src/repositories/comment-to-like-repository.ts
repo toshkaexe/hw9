@@ -44,12 +44,34 @@ export class CommentToLikeRepository {
 
     static async removeUserDislikeFromUser(id: string, userId: string) {
         try {
-            const comment =
-                await HelpLikesInfoMongoModel
-                    .updateOne(
-                        {commentId: id},
-                        {$pull: {dislikes: userId}});
-            return !!comment;// Return true if a document exists, "false" otherwise
+            // тут случай, если у нас новый юзер
+            //Провеить,еслть ли он уже в базе
+            const isUserExists = await HelpLikesInfoMongoModel.findOne({
+                commentId: id,
+                $or: [
+                    {likes: {$in: [userId]}},
+                    {dislikes: {$in: [userId]}}
+                ]
+            });
+
+            if (isUserExists) {
+                // это для случая,если у нас 1 юзер
+                const comment =
+                    await HelpLikesInfoMongoModel
+                        .updateOne(
+                            {commentId: id},
+                            {$pull: {dislikes: userId}});
+                return !!comment;// Return true if a document exists, "false" otherwise
+            } else {
+                const comment =
+                    await HelpLikesInfoMongoModel
+                        .updateOne(
+                            {commentId: id},
+                            {$push: {dislikes: userId}});
+                console.log("comment dislike= ", comment)
+                return !!comment;// Return "true" if a document exists, "false" otherwise
+
+            }
 
         } catch (error) {
             console.log(error)
@@ -59,12 +81,34 @@ export class CommentToLikeRepository {
 
     static async removeUserLikeFromUser(id: string, userId: string) {
         try {
-            const comment =
-                await HelpLikesInfoMongoModel
-                    .updateOne(
-                        {commentId: id},
-                        {$pull: {likes: userId}});
-            return !!comment;// Return true if a document exists, "false" otherwise
+            // тут случай, если у нас новый юзер
+            //Провеить,еслть ли он уже в базе
+            const isUserExists = await HelpLikesInfoMongoModel.findOne({
+                commentId: id,
+                $or: [
+                    {likes: {$in: [userId]}},
+                    {dislikes: {$in: [userId]}}
+                ]
+            });
+
+            if (isUserExists) {
+                // это для случая,если у нас 1 юзер
+                const comment =
+                    await HelpLikesInfoMongoModel
+                        .updateOne(
+                            {commentId: id},
+                            {$pull: {likes: userId}});
+                return !!comment;// Return true if a document exists, "false" otherwise
+
+            } else {
+                const comment =
+                    await HelpLikesInfoMongoModel
+                        .updateOne(
+                            {commentId: id},
+                            {$push: {likes: userId}});
+                console.log("comment dislike= ", comment)
+                return !!comment;// Return "true" if a document exists, "false" otherwise
+            }
 
         } catch (error) {
             console.log(error)
@@ -140,11 +184,11 @@ export class CommentToLikeRepository {
     }
 
 
-
     static async getStatusForUnauthorisatedUser(commentId: string) {
         try {
             const result = await HelpLikesInfoMongoModel.findOne({
-                commentId: commentId});
+                commentId: commentId
+            });
 
 
             return LikeStatus.NONE;
@@ -155,6 +199,7 @@ export class CommentToLikeRepository {
         }
 
     }
+
     static async getCurrentUserStatus(commentId: string, userId: string) {
         try {
             const result = await HelpLikesInfoMongoModel.findOne({

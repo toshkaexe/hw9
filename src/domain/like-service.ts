@@ -7,16 +7,19 @@ export class LikeService {
                                    commentId: string,
                                    likeStatus: LikeStatus) {
 
+        // проверка, что у нас есть коммент
         const comment =
             await CommentToLikeRepository.getCommentByCommentId(commentId);
 
         if (!comment) {
+            //если нет коммента, то создаем
             // create new record in db
             const likeInfo: HelpLikesInfo = {
                 commentId: commentId,
                 likes: [],
                 dislikes: []
             }
+            // и пушим лайк или дизлайк
             switch (likeStatus) {
                 case LikeStatus.LIKE:
                     likeInfo.likes.push(userId);

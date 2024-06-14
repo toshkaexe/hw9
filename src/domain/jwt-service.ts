@@ -1,7 +1,8 @@
 import {ObjectId} from "mongodb";
 import jwt from 'jsonwebtoken';
+import {AppSettings} from "../settings";
 
-const secretKey = 'your_secret_key';
+const secretKey = '_your_secret_key_';
 
 export class jwtService {
     static async getUserIdAndDeviceId(token: string) {
