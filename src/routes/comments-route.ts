@@ -114,10 +114,26 @@ commentsRoute.get('/:commentId',
             foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getDislikesCount(req.params.commentId)
 
             console.log("foundComment ", foundComment)
+            const token = req.headers['authorization']
+            console.log("token = ", token);
+            if (!token) {
+                // получить коммент для авторизованного юзера
+                foundComment.likesInfo.myStatus = await CommentToLikeRepository.getStatusForUnauthorisatedUser(req.params.commentId)
+                return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
+
+            }
+
+            const tokenWithoutBearer = token.split(' ')[1]  //bearer fasdfasdfasdf
+            console.log("tokenWithoutBearer: ", tokenWithoutBearer)
+            // получить коммент для авторизованного юзера
+            const userId =
+                await jwtService.userfromToken(tokenWithoutBearer);
+            console.log("userId = ", userId);
+
+            foundComment.likesInfo.myStatus =
+                await CommentToLikeRepository.getCurrentUserStatus(req.params.commentId, foundComment.commentatorInfo.userId)
 
             return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
-
-
         } catch (error) {
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
