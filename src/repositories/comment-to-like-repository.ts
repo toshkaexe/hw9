@@ -114,8 +114,8 @@ export class CommentToLikeRepository {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id})
-            if (!comment){
-                return  0
+            if (!comment) {
+                return 0
             }
             return comment.likes.length;
         } catch (error) {
@@ -129,8 +129,8 @@ export class CommentToLikeRepository {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id})
-            if (!comment){
-                return  0;
+            if (!comment) {
+                return 0;
             }
             return comment.dislikes.length;
         } catch (error) {
@@ -139,5 +139,46 @@ export class CommentToLikeRepository {
         }
     }
 
+
+
+    static async getStatusForUnauthorisatedUser(commentId: string) {
+        try {
+            const result = await HelpLikesInfoMongoModel.findOne({
+                commentId: commentId});
+
+
+            return LikeStatus.NONE;
+
+        } catch (error) {
+            console.log("Error checking user likes or dislikes: ", error)
+            return LikeStatus.NONE;
+        }
+
+    }
+    static async getCurrentUserStatus(commentId: string, userId: string) {
+        try {
+            const result = await HelpLikesInfoMongoModel.findOne({
+                commentId: commentId,
+                $or: [
+                    {likes: {$in: [userId]}},
+                    {dislikes: {$in: [userId]}}
+                ]
+            });
+
+            if (result) {
+                if (result.likes.includes(userId)) {
+                    return LikeStatus.LIKE
+                } else if (result.dislikes.includes(userId)) {
+                    return LikeStatus.DISLIKE;
+                }
+            }
+            return LikeStatus.NONE;
+
+        } catch (error) {
+            console.log("Error checking user likes or dislikes: ", error)
+            return LikeStatus.NONE;
+        }
+
+    }
 
 }
