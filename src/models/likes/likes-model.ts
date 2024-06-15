@@ -19,6 +19,7 @@ export type SetLike = {
 
 export type HelpLikesInfo = {
     commentId: string
+    postId: string
     likes:  string []
     dislikes:  string []
 }

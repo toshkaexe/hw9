@@ -2,13 +2,13 @@ import {CommentatorInfo, CommentDbModel, CommentViewModel} from "../models/comme
 import {CommentsRepository} from "../repositories/comments-repository";
 import {OutputPostModel} from "../models/posts/posts-models";
 import {PostsQueryRepository} from "../repositories/posts-query-repository";
-import {commentsQueryRepository} from "../repositories/comments-query-repository";
+import {CommentsQueryRepository} from "../repositories/comments-query-repository";
 import {LikeCountInfo, LikesDBModel, SetLike} from "../models/likes/likes-model";
 import {LikesMongoModel} from "../db/schemas";
 
 export class CommentsService {
     static async UpdateComment(id: string, body: CommentDbModel, userId: string) {
-        const targetComment = await commentsQueryRepository.getCommentById(id)
+        const targetComment = await CommentsQueryRepository.getCommentById(id)
 
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
@@ -19,7 +19,7 @@ export class CommentsService {
 
     static async DeleteCommentById(id: string, userId: string) {
 
-        const targetComment = await commentsQueryRepository.getCommentById(id)
+        const targetComment = await CommentsQueryRepository.getCommentById(id)
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
 
@@ -28,7 +28,9 @@ export class CommentsService {
     }
 
     static async CreateComment(
-        userData: { userId: string, userLogin: string }, content: string) {
+        userData: { userId: string, userLogin: string },
+        postId: string,
+        content: string) {
 
         const commentator: CommentatorInfo = {
             userId: userData.userId,
@@ -41,6 +43,7 @@ export class CommentsService {
         }
 
         const newComment: CommentDbModel = {
+            postId: postId,
             content: content,
             commentatorInfo: commentator,
             createdAt: new Date().toISOString(),

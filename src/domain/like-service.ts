@@ -4,6 +4,7 @@ import {CommentToLikeRepository} from "../repositories/comment-to-like-repositor
 
 export class LikeService {
     static async pushLikeOrDislike(userId: string,
+                                   postId: string,
                                    commentId: string,
                                    likeStatus: LikeStatus) {
 
@@ -16,6 +17,7 @@ export class LikeService {
             // create new record in db
             const likeInfo: HelpLikesInfo = {
                 commentId: commentId,
+                postId: postId,
                 likes: [],
                 dislikes: []
             }

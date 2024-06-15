@@ -6,7 +6,7 @@ export type CommentatorInfo = {
 }
 
 export type CommentDbModel = {
-    //  postId: string
+    postId: string
     content: string
     commentatorInfo: {
         userId: string
@@ -23,6 +23,7 @@ export type CommentDbModel = {
 
 export type CommentViewModel = {
     id: string,
+ //   postId: string,
     content: string
     commentatorInfo: {
         userId: string
@@ -41,6 +42,7 @@ export const commentMapper =
     (comment: WithId<CommentDbModel>): CommentViewModel => {
         return {
             id: comment._id.toString(),
+         //   postId: comment.postId,
             content: comment.content,
             commentatorInfo: {
                 userId: comment.commentatorInfo.userId,

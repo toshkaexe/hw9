@@ -71,7 +71,10 @@ commentsRoute.put('/:commentId/like-status',
             if (!userId)
             {   return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);}
 
-           const tmp =  await LikeService.pushLikeOrDislike(userId, commentId, likeStatus1)
+           const tmp =  await LikeService.pushLikeOrDislike(userId,
+               isCommentExists.postId,
+               commentId,
+               likeStatus1)
 
             console.log("pushLikeOrDislike = ", tmp)
 

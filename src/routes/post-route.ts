@@ -1,6 +1,6 @@
 import {Router, Request, Response} from 'express';
 import {BlogRepository} from "../repositories/blog-repository";
-import {authMiddleware, bearerAuth} from "../middleware/auth-middlewares";
+import {authMiddleware, bearerAuth, bearerAuthUserAuth} from "../middleware/auth-middlewares";
 import {blogValidation, nameValidation} from "../validators/blog-validation";
 import {PostsRepository} from "../repositories/posts-repository";
 
@@ -16,7 +16,7 @@ import {PostsQueryRepository} from "../repositories/posts-query-repository";
 import {PostsService} from "../domain/posts-service";
 import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {BlogViewModel} from "../models/blogs/blog-models";
-import {commentsQueryRepository} from "../repositories/comments-query-repository";
+import {CommentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
 import {validateComments, validateContents} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
@@ -24,6 +24,7 @@ import {PostMongoModel, UserMongoModel} from "../db/schemas";
 
 import {jwtService} from "../domain/jwt-service";
 import {commentMapper} from "../models/comments/comment-model";
+import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
 
 export const postRoute = Router({})
 
@@ -100,22 +101,64 @@ postRoute.get('/:postId/comments',
     async (req: Request, res: Response): Promise<void> => {
         console.log("мы в контроллере")
         const postId = req.params.postId
-        const foundPost: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
+        const foundPost: OutputPostModel | null =
+            await PostsQueryRepository.findPostById(postId)
         console.log("foundPost: ", foundPost)
         if (!foundPost) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
             return
         }
 
+        console.log(req.query)
+
         const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
+
+        const token = req.headers['authorization']
+        console.log("token = ", token);
+        //если у  нач неавторизованный юзер
+        if (!token) {
+            // получить коммент для авторизованного юзера
+            const comments =
+                await CommentsQueryRepository.getCommentsForPostForUnautorisedUser(
+                    req.params.postId,
+                    //    userId,
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    sortDirection)
+            console.log("comments: ", comments)
+            if (!comments) {
+                res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+                return
+            }
+            res.send(comments)
+
+        }
+
+
+
+        const tokenWithoutBearer = token!.split(' ')[1]  //bearer fasdfasdfasdf
+        console.log("tokenWithoutBearer: ", tokenWithoutBearer)
+        // получить коммент для авторизованного юзера
+        const userId =
+            await jwtService.userfromToken(tokenWithoutBearer);
+
         const comments =
-            await commentsQueryRepository.getCommentsForPost(req.params.postId, pageNumber, pageSize, sortBy, sortDirection)
+            await CommentsQueryRepository.getCommentsForPostForAutorisedUser(
+                req.params.postId,
+                   userId,
+                pageNumber,
+                pageSize,
+                sortBy,
+                sortDirection)
         console.log("comments: ", comments)
         if (!comments) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
             return
         }
         res.send(comments)
+
+
     })
 
 // добавляем новый коммент
@@ -161,7 +204,9 @@ postRoute.post('/:postId/comments',
 
             const newComment =
                 await CommentsService.CreateComment(
-                    {userId: userId, userLogin: user!.userData.login}, content)
+                    {userId: userId, userLogin: user!.userData.login},
+                    postId,
+                    content)
             return res.status(HTTP_STATUSES.CREATED_201).send(commentMapper(newComment))
         } catch (error) {
             console.log("error in postRoute.post('/:postId/comments' ", error)
