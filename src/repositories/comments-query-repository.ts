@@ -6,9 +6,9 @@ import {CommentToLikeRepository} from "./comment-to-like-repository";
 
 
 export class CommentsQueryRepository {
-// тут ошибка
+
     static async getCommentById(id: string) {
-        // if (!ObjectId.isValid(id)) return null // что с тобой не так?
+
         const comment: WithId<CommentDbModel> | null =
             await CommentMongoModel.findById(id)
         console.log("in CommentsQueryRepository= ", comment)
@@ -29,21 +29,15 @@ export class CommentsQueryRepository {
             sortOptions[sortBy] = 1
         }
         const filter = {postId: postId}
-        console.log("filter: ", filter)
+
 
         const totalCount = await CommentMongoModel.countDocuments(filter)
 
 
-        console.log("totalCount=", totalCount)
         const pagesCount = Math.ceil(totalCount / +pageSize)
-        console.log("pageCount=", pagesCount)
+
         const scip = (+pageNumber - 1) * +pageSize
-        console.log("scip=", scip)
 
-        const document = await CommentMongoModel.find(filter)
-        console.log("document: ", document)
-
-        console.log("document end")
 
         const comments =
             await CommentMongoModel
@@ -59,12 +53,6 @@ export class CommentsQueryRepository {
             console.log(comment._id.toString())
             comment.likesInfo.likesCount = await CommentToLikeRepository.getNumberOfLikes(comment._id.toString())
             comment.likesInfo.dislikesCount = await CommentToLikeRepository.getNumberOfDislikes(comment._id.toString())
-            //Status //TODO find myStatus
-
-
-            // comment.likesInfo.myStatus = await CommentToLikeRepository.getStatusForUnauthorisatedUser(comment._id.toString())
-
-
         }
         console.log("..............")
         return comments ? {
@@ -93,21 +81,10 @@ export class CommentsQueryRepository {
             sortOptions[sortBy] = 1
         }
         const filter = {postId: postId}
-        console.log("filter: ", filter)
-
         const totalCount = await CommentMongoModel.countDocuments(filter)
-
-
-        console.log("totalCount=", totalCount)
         const pagesCount = Math.ceil(totalCount / +pageSize)
-        console.log("pageCount=", pagesCount)
         const scip = (+pageNumber - 1) * +pageSize
-        console.log("scip=", scip)
 
-        const document = await CommentMongoModel.find(filter)
-        console.log("document: ", document)
-
-        console.log("document end")
 
         const comments =
             await CommentMongoModel
@@ -115,9 +92,6 @@ export class CommentsQueryRepository {
                 .sort(sortOptions)
                 .limit(+pageSize)
                 .skip(scip);
-
-
-        console.log("comments===", comments)
 
         for (const comment of comments) {
             console.log(comment._id.toString())
