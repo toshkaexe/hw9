@@ -5,7 +5,7 @@ import {CommentMongoModel} from "../db/schemas";
 
 
 export const commentsQueryRepository = {
-
+// тут ошибка
     async getCommentById(id: string) {
         // if (!ObjectId.isValid(id)) return null // что с тобой не так?
         const comment: WithId<CommentDbModel> | null =
