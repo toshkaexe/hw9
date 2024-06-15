@@ -1,6 +1,7 @@
 import {ObjectId} from "mongodb";
 import jwt from 'jsonwebtoken';
 import {AppSettings} from "../settings";
+import {isNullOrUndefined} from "util";
 
 const secretKey = '_your_secret_key_';
 
@@ -15,6 +16,7 @@ export class jwtService {
             return {userId, deviceId}
 
         } catch (error) {
+            console.log("error = ", error)
             console.log({get_user_by_token_error: error})
             return null
         }
@@ -34,6 +36,7 @@ export class jwtService {
             const res: any = jwt.verify(refreshToken, secretKey);
             return res.userId
         } catch (error) {
+            console.log("error = ", error)
             return null;
         }
     }
@@ -43,6 +46,7 @@ export class jwtService {
             const decodedToken: any = jwt.decode(token);
             return new Date(decodedToken.exp * 1000).toISOString();
         } catch (e) {
+            console.log("error = ", e)
             console.log({error_in_getExpirationDate: e});
             return null;
         }

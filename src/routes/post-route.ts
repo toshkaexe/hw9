@@ -98,8 +98,10 @@ postRoute.delete('/:postId',
 postRoute.get('/:postId/comments',
     validateMongoId(),
     async (req: Request, res: Response): Promise<void> => {
+        console.log("мы в контроллере")
         const postId = req.params.postId
         const foundPost: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
+        console.log("foundPost: ", foundPost)
         if (!foundPost) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
             return
@@ -108,6 +110,7 @@ postRoute.get('/:postId/comments',
         const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
         const comments =
             await commentsQueryRepository.getCommentsForPost(req.params.postId, pageNumber, pageSize, sortBy, sortDirection)
+        console.log("comments: ", comments)
         if (!comments) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
             return
@@ -132,11 +135,10 @@ postRoute.post('/:postId/comments',
             if (!checkedPost)
                 return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         } catch (error) {
-            console.log("Error in postId, does not exist")
+            console.log("error in postId, does not exist", error)
             //    return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204)
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
-
 
         const token= req.headers['authorization']
         console.log("auth=");
@@ -147,8 +149,6 @@ postRoute.post('/:postId/comments',
         }
         const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
 
-        //const userId = await jwtService.getUserIdAndDeviceId(token1)
-
         console.log("token1: ", token1)
         try {
             let userId = await jwtService.userfromToken(token1);
@@ -156,18 +156,15 @@ postRoute.post('/:postId/comments',
             if (!userId) {
               return  res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
             }
-            console.log("userId = ", userId)
-            const user = await UserMongoModel.findById(userId)
 
-            console.log("user = ", user)
-            //console.log("email = ", user
+            const user = await UserMongoModel.findById(userId)
 
             const newComment =
                 await CommentsService.CreateComment(
-                    {userId: userId, userLogin: user!.userData.login}, postId, content)
+                    {userId: userId, userLogin: user!.userData.login}, content)
             return res.status(HTTP_STATUSES.CREATED_201).send(commentMapper(newComment))
         } catch (error) {
-            console.log("error,", error)
+            console.log("error in postRoute.post('/:postId/comments' ", error)
             return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
         }
     }

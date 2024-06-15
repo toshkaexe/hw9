@@ -66,6 +66,7 @@ export class PostsRepository {
             return postMapper(post);
 
         } catch (err) {
+            console.log("error = ", err)
             return null;
         }
 
@@ -82,6 +83,7 @@ export class PostsRepository {
                 await PostMongoModel.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch (err) {
+            console.log("error = ", err)
             return false
         }
     }

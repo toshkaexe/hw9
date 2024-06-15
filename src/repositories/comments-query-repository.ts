@@ -26,6 +26,7 @@ export const commentsQueryRepository = {
             sortOptions[sortBy] = 1
         }
         const filter = {postId: id}
+        console.log("filer: ", filter)
 
         const totalCount = await CommentMongoModel.countDocuments(filter) // откуда он берет дополнительную единицу?
         const pagesCount = Math.ceil(totalCount / +pageSize)

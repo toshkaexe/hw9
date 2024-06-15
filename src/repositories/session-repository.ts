@@ -9,7 +9,7 @@ export class SessionRepository {
             const res = await DeviceMongoModel.create(sessionData)
             return res.toString()
         } catch (e) {
-            console.log(e)
+            console.log("error in create device" , e)
             return null
         }
     }
@@ -32,6 +32,7 @@ export class SessionRepository {
                 )
             return !!res.modifiedCount
         } catch (e) {
+            console.log("error in , ", e)
             return false;
         }
     }
@@ -45,7 +46,7 @@ export class SessionRepository {
                     userId: userId
                 });
         } catch (e) {
-            console.log({"error_by_deleting_session_by_device_id": e})
+            console.log({"error  _ by_deleting_session_by_device_id": e})
             return false;
         }
     }
@@ -64,7 +65,7 @@ export class SessionRepository {
                         });
             return res;
         } catch (e) {
-            console.log({'error_message_in_findSessionByUserIdAndDeviceId': e})
+            console.log({'error  _message_in_findSessionByUserIdAndDeviceId': e})
             return null;
         }
     }
@@ -77,7 +78,8 @@ export class SessionRepository {
             const currentSession =
                 await DeviceMongoModel.findOne({deviceId: deviceId, userId: userId});
             return await DeviceMongoModel.deleteMany({_id: {$ne: currentSession!._id}});
-        } catch (e) {
+        } catch (error) {
+            console.log("error in current session", error)
             return false;
         }
     }

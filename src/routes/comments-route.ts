@@ -2,17 +2,16 @@ import {Router, Request, Response} from 'express';
 import {HTTP_STATUSES, LikeStatus} from "../models/common";
 
 
-import {commentsQueryRepository} from "../repositories/comments-query-repository";
-import {authMiddleware, bearerAuth, bearerAuthUserAuth} from "../middleware/auth-middlewares";
-import {validateComments, validateContents, validateLikeStatus} from "../validators/comments-validation";
+import {bearerAuth, bearerAuthUserAuth} from "../middleware/auth-middlewares";
+import {validateContents, validateLikeStatus} from "../validators/comments-validation";
 import {CommentsService} from "../domain/comments-service";
-import {LikesDBModel} from "../models/likes/likes-model";
+
 import {CommentDbModel, commentMapper, CommentViewModel} from "../models/comments/comment-model";
 import {CommentMongoModel} from "../db/schemas";
 import {jwtService} from "../domain/jwt-service";
 import {LikeService} from "../domain/like-service";
 import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
-import {sessionMiddleware} from "../middleware/verify-token-in-cookie";
+
 import {WithId} from "mongodb";
 
 
@@ -47,7 +46,7 @@ commentsRoute.put('/:commentId/like-status',
             const isCommentExists =
                 await CommentMongoModel.findById(commentId)
             if (!isCommentExists)
-                return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+            { return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)}
 
             const likeStatus1 = req.body.likeStatus;
             console.log("likeStatus=", likeStatus1)
@@ -70,15 +69,19 @@ commentsRoute.put('/:commentId/like-status',
 
             // если юзер неавторизован, то не ставим лайки
             if (!userId)
-                return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+            {   return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);}
 
-            await LikeService.pushLikeOrDislike(userId, commentId, likeStatus1)
+           const tmp =  await LikeService.pushLikeOrDislike(userId, commentId, likeStatus1)
 
-        } catch (error) {
-            console.log(error)
+            console.log("pushLikeOrDislike = ", tmp)
 
+            return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+        } catch (error: any) {
+            console.log("error  in '/:commentId/like-status',", error.message)
+           // throw new Error()
+            return res.sendStatus(HTTP_STATUSES.InternalServerError_500);
         }
-        return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+
 
     })
 
@@ -110,19 +113,21 @@ commentsRoute.get('/:commentId',
             console.log("fountComment=", foundComment)
             if (!foundComment) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 
-            foundComment.likesInfo.likesCount = await CommentToLikeRepository.getLikesCount(req.params.commentId)
-            foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getDislikesCount(req.params.commentId)
+            foundComment.likesInfo.likesCount = await CommentToLikeRepository.getNumberOfLikes(req.params.commentId)
+            foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getNumberOfDislikes(req.params.commentId)
 
             console.log("foundComment ", foundComment)
 
             const token = req.headers['authorization']
             console.log("token = ", token);
+            //если у  нач неавторизованный юзер
             if (!token) {
                 // получить коммент для авторизованного юзера
                 foundComment.likesInfo.myStatus = await CommentToLikeRepository.getStatusForUnauthorisatedUser(req.params.commentId)
                 return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
 
             }
+
 
             const tokenWithoutBearer = token.split(' ')[1]  //bearer fasdfasdfasdf
             console.log("tokenWithoutBearer: ", tokenWithoutBearer)
@@ -136,6 +141,7 @@ commentsRoute.get('/:commentId',
 
             return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
         } catch (error) {
+            console.log("error in getcomments------>,", error)
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
 
@@ -149,6 +155,7 @@ commentsRoute.get('/',
             const foundComment: CommentViewModel | null = await CommentMongoModel.findById(req.params.commentId)
             return res.status(HTTP_STATUSES.OK_200).send(foundComment)
         } catch (error) {
+            console.log("error in get comments,", error)
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
 

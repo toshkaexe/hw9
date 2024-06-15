@@ -9,7 +9,7 @@ export class BlacklistRepository {
                 new  BlacklistTokensMongoModel(token);
             return await res.save()
         } catch (e) {
-            console.log(e)
+            console.log("error in = addRefreshTokenToBlackList",e)
             return null
         }
     }
@@ -20,7 +20,7 @@ export class BlacklistRepository {
                 await BlacklistTokensMongoModel.findOne({refreshToken: token});
             return !!somethingInDB; // Return true if document exists, false otherwise
         } catch (e) {
-            console.log(e)
+            console.log("error = ", e)
             return false;
         }
     }

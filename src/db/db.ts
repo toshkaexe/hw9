@@ -12,7 +12,7 @@ export const db: DBType = {
 
 const dbName = 'blogs-hws';
 const mongoURI = 'mongodb+srv://antonzeltser:admin@cluster0.rmbeaqk.mongodb.net/'
-const port = 3000;
+const port = process.env.PORT;
 
 export async function runDBMongoose() {
     try {
@@ -20,7 +20,7 @@ export async function runDBMongoose() {
         console.log('Connected successfully to mongo server!');
         console.log(`Example app listening on port: ${port}`)
     } catch (err) {
-        console.log(`Cannot connect to the db: ${err}`)
+        console.log(`Error Cannot connect to the db: ${err}`)
         await mongoose.disconnect()
     }
 }

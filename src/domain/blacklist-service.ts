@@ -11,6 +11,7 @@ export class BlacklistService {
             return await BlacklistTokensMongoModel.find({});
 
         } catch (e) {
+            console.log("error in getAll = ",e)
             return false;
         }
     }

@@ -14,6 +14,7 @@ export class RequestApiRepository {
          //   return apiRequestMapper({_id: res.toString(), ...apiRequest})
 
         } catch (e) {
+            console.log("error = ", e)
             return null
         }
     }

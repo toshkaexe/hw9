@@ -7,22 +7,18 @@ import {LikeCountInfo, LikesDBModel, SetLike} from "../models/likes/likes-model"
 import {LikesMongoModel} from "../db/schemas";
 
 export class CommentsService {
-
-
-    static async saveLike(info: LikesDBModel) {
-        const result = new LikesMongoModel(info);
-        await result.save();
-    }
-
     static async UpdateComment(id: string, body: CommentDbModel, userId: string) {
         const targetComment = await commentsQueryRepository.getCommentById(id)
+
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
+
         await CommentsRepository.updateComment(id, body)
         return true;
     }
 
     static async DeleteCommentById(id: string, userId: string) {
+
         const targetComment = await commentsQueryRepository.getCommentById(id)
         if (!targetComment) return null;
         if (targetComment.commentatorInfo.userId != userId) return false;
@@ -32,11 +28,7 @@ export class CommentsService {
     }
 
     static async CreateComment(
-        userData: { userId: string, userLogin: string }, postId: string, content: string) {
-
-        //const post: OutputPostModel | null = await PostsQueryRepository.findPostById(postId)
-        //console.log(post, 'its post')
-        //if (!post) return null
+        userData: { userId: string, userLogin: string }, content: string) {
 
         const commentator: CommentatorInfo = {
             userId: userData.userId,
@@ -49,7 +41,6 @@ export class CommentsService {
         }
 
         const newComment: CommentDbModel = {
-            //postId: postId,
             content: content,
             commentatorInfo: commentator,
             createdAt: new Date().toISOString(),

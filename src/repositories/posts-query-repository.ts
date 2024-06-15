@@ -38,8 +38,12 @@ export class PostsQueryRepository {
     }
 
     static async findPostById(id: string): Promise<OutputPostModel | null> {
+
         if (!ObjectId.isValid(id)) return null
-        const post: WithId<PostDbModel> | null = await PostMongoModel.findOne({_id: new ObjectId(id)})
+        const post: WithId<PostDbModel> | null = await PostMongoModel.findById(id)
+
+
+        console.log("post=", post)
         return post ? postMapper(post) : null
     }
 

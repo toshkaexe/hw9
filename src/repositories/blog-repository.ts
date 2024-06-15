@@ -30,6 +30,7 @@ export class BlogRepository {
 
             return true;
         } catch (err) {
+            console.log("error in updateBlog",err)
             return false;
         }
     }
@@ -44,6 +45,7 @@ export class BlogRepository {
 
             return true
         } catch (err) {
+            console.log("error in deleteBlogById",err)
             return false;
         }
     }
@@ -66,7 +68,9 @@ export class BlogRepository {
                 return null
             }
             return blogMapper(blog)
-        } catch (err) {
+        } catch (error) {
+            console.log("error in getBlogById",error)
+
             return null;
         }
     }
