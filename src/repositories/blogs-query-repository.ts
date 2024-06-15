@@ -79,7 +79,8 @@ export class BlogsQueryRepository {
                 items: posts.map(postMapper)
             } : null
         } catch (err) {
-            return err
+            console.log("error in getPostsToBlog", err)
+            return null
         }
     }
 

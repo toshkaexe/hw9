@@ -94,6 +94,7 @@ authRouter.post('/login',
             res.send({accessToken: token?.accessToken})
             res.status(200)
         } catch (error) {
+            console.log("error in ", error)
             console.log({login_error: error})
             res.sendStatus(HTTP_STATUSES.InternalServerError_500) // better bad request
         }

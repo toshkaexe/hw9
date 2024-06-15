@@ -25,7 +25,7 @@ const HelpLikesInfoSchema
 
 // Create the Mongoose model for HelpLikesInfo
 export const HelpLikesInfoMongoModel =
-    mongoose.model('helplikesinfo', HelpLikesInfoSchema);
+    mongoose.model('likesForComment', HelpLikesInfoSchema);
 
 
 //------------------------------------------------------------------------------------

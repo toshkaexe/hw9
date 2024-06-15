@@ -13,7 +13,7 @@ export class CommentToLikeRepository {
                 await HelpLikesInfoMongoModel.findOne({commentId: id})
             return !!comment;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
-            console.log(error)
+            console.log("error in= ", error)
             return false;
         }
     }
@@ -25,7 +25,7 @@ export class CommentToLikeRepository {
                 await HelpLikesInfoMongoModel.findOne({commentId: id, likes: userId})
             return !!comment;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
-            console.log(error)
+            console.log("error = ", error)
             return false;
         }
     }
@@ -36,7 +36,7 @@ export class CommentToLikeRepository {
                 await HelpLikesInfoMongoModel.findOne({commentId: id, dislikes: userId})
             return !!comment;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
-            console.log(error)
+            console.log("error = ", error)
             return false;
         }
     }
@@ -74,7 +74,7 @@ export class CommentToLikeRepository {
             }
 
         } catch (error) {
-            console.log(error)
+            console.log("error = ", error)
             return false;
         }
     }
@@ -111,7 +111,7 @@ export class CommentToLikeRepository {
             }
 
         } catch (error) {
-            console.log(error)
+            console.log("error = ", error)
             return false;
         }
     }
@@ -138,7 +138,8 @@ export class CommentToLikeRepository {
                 return !!comment;// Return "true" if a document exists, "false" otherwise
             }
         } catch (error) {
-            console.log(error)
+
+            console.log("error = ", error)
             return false;
         }
     }
@@ -150,11 +151,12 @@ export class CommentToLikeRepository {
             return await res.save()
         } catch (error) {
             console.log(error)
+            console.log("error = ", error)
             return null
         }
     }
 
-    static async getLikesCount(id: string) {
+    static async getNumberOfLikes(id: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id})
@@ -164,12 +166,13 @@ export class CommentToLikeRepository {
             return comment.likes.length;
         } catch (error) {
             console.log(error)
+            console.log("error = ", error)
             return 0;
         }
 
     }
 
-    static async getDislikesCount(id: string) {
+    static async getNumberOfDislikes(id: string) {
         try {
             const comment =
                 await HelpLikesInfoMongoModel.findOne({commentId: id})
@@ -179,6 +182,7 @@ export class CommentToLikeRepository {
             return comment.dislikes.length;
         } catch (error) {
             console.log(error)
+            console.log("error = ", error)
             return 0;
         }
     }

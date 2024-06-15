@@ -11,8 +11,9 @@ import {emailRoute} from "./routes/emailRoute";
 import {cookie} from "express-validator";
 import cookieParser from "cookie-parser";
 import {deviceRoute} from "./routes/device-route";
+import dotenv from "dotenv";
 
-
+dotenv.config();
 export const AppSettings = {
 
     PORT: process.env.PORT,

@@ -9,6 +9,7 @@ export class BryptService {
             return await bcrypt.compare(password, hash);
 
         } catch (error) {
+            console.log("error", error)
             throw new Error('Error comparing hashes');
         }
     }

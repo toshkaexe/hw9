@@ -84,7 +84,7 @@ blogRoute.post('/:blogId/posts',
             if (!checkBlog) return res.status(HTTP_STATUSES.NOT_FOUND_404).send("blog does not exists")
 
         } catch (error) {
-            console.log("Error", error)
+            console.log("Error in blog rouete", error)
             return res.status(HTTP_STATUSES.NOT_FOUND_404).send("blog does not exists")
         }
 

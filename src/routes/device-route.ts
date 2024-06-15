@@ -29,6 +29,7 @@ deviceRoute.get('/',
             }
             res.json(sessions);
         } catch (error) {
+            console.log("error in deviceRoute.get(", error)
             res.sendStatus(HTTP_STATUSES.InternalServerError_500);
         }
     });

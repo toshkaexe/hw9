@@ -17,17 +17,20 @@ import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
 import {BryptService} from "./brypt-service";
 import {AppSettings} from "../settings";
+import dotenv from "dotenv";
 
+dotenv.config();
 
-const expiresAccessTokenTime =  '1h' //AppSettings.ACCESS_TOKEN_EXPIRES
-const expiresRefreshTokenTime= '1h' //AppSettings.REFRESH_TOKEN_EXPIRES
 
 const objects: any[] = [];
 const userRepository = new UsersRepository();
 objects.push(userRepository);
-
+const expiresAccessTokenTime = '1h' // AppSettings.ACCESS_TOKEN_EXPIRES
+const expiresRefreshTokenTime= '1h' // AppSettings.REFRESH_TOKEN_EXPIRES
 
 export class AuthService {
+
+
     static async logout(deviceId: string, userId: string) {
         return await SessionRepository.deleteSessionByDeviceIdAndUserId(deviceId, userId);
     }
@@ -142,7 +145,7 @@ export class AuthService {
             await EmailManager.sendEmailRecoveryMessage(emailData)
             return true
         } catch (error) {
-            console.log(error)
+            console.log("error in email", error)
             return false
         }
     }
@@ -194,7 +197,7 @@ export class AuthService {
             console.log('письмо отправлено')
             return true
         } catch (error) {
-            console.error(error)
+            console.error("error in", error)
             await UsersRepository.deleteUser(createResult.toString())
             return null
         }
