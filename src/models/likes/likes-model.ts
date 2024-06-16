@@ -40,5 +40,4 @@ export type LikesForPost = {
     blogId: string
     likes: LikeInfo[]
     dislikes: LikeInfo[]
-
 }

@@ -129,51 +129,76 @@ export class LikeService {
             }
         } else {
             //
+            const previousUserLike = await LikeToPostRepository.InUserInLikeArray(postId, userId);
+            const previousUserDisLike = await LikeToPostRepository.IsUserInDislikeArray(postId, userId);
             //
-            // const setUserLike = await CommentToLikeRepository.InUserInLikeArray(postId, userId);
-            // const setUserDisLike = await CommentToLikeRepository.IsUserInDislikeArray(commentId, userId);
+            console.log("previousUserLike = ", previousUserLike);
+            console.log("previousUserDisLike = ", previousUserDisLike);
+            console.log("UserLike = ", likeStatus);
             //
-            // console.log("setUserLike = ", setUserLike);
-            // console.log("setUserDisLike = ", setUserDisLike);
-            //
-            // if (!setUserLike && !setUserDisLike) {
-            //
-            //     const update = await CommentToLikeRepository.updateComment(commentId, userId, likeStatus);
-            //     return true
-            // }
-            //
-            //
-            // switch (likeStatus) {
-            //     case LikeStatus.LIKE:
-            //         if (setUserLike) {
-            //             return;
-            //         } else {
-            //
-            //             await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.LIKE);
-            //             await CommentToLikeRepository.removeUserDislikeFromUser(commentId, userId);
-            //         }
-            //         break;
-            //     case LikeStatus.DISLIKE:
-            //         if (setUserDisLike) {
-            //             return;
-            //         } else {
-            //
-            //
-            //             await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.DISLIKE);
-            //             await CommentToLikeRepository.removeUserLikeFromUser(commentId, userId);
-            //         }
-            //         break;
-            //     case LikeStatus.NONE:
-            //
-            //         await CommentToLikeRepository.removeUserLikeFromUser(commentId, userId);
-            //         await CommentToLikeRepository.removeUserDislikeFromUser(commentId, userId);
-            //         break;
-            //     default:
-            //         throw new Error("Invalid likeStauts")
-            // }
-            //
-            //
+            if (!previousUserLike && !previousUserDisLike) {
+
+                const user = await UserMongoModel.findById(userId);
+
+                const likeInfoDetails: LikeInfo = {
+                    userId: userId,
+                    userLogin: user!.userData.login,
+                    createdAt: new Date()
+                }
+
+                const update = await LikeToPostRepository
+                    .updatePost(postId, likeInfoDetails, likeStatus);
+                return true
+            }
+
+
+            switch (likeStatus) {
+                case LikeStatus.LIKE:
+                    if (previousUserLike) {
+                        return;
+                    } else {
+                        const user = await UserMongoModel.findById(userId);
+
+                        const likeInfoDetails: LikeInfo = {
+                            userId: userId,
+                            userLogin: user!.userData.login,
+                            createdAt: new Date()
+                        }
+                        await LikeToPostRepository
+                            .updatePost(postId, likeInfoDetails, LikeStatus.LIKE);
+                        await LikeToPostRepository
+                            .removeUserDislikeFromUser(postId, userId);
+                    }
+                    break;
+                case LikeStatus.DISLIKE:
+                    if (previousUserDisLike) {
+                        return;
+                    } else {
+                        const user = await UserMongoModel.findById(userId);
+
+                        const likeInfoDetails: LikeInfo = {
+                            userId: userId,
+                            userLogin: user!.userData.login,
+                            createdAt: new Date()
+                        }
+
+                        await LikeToPostRepository
+                            .updatePost(postId, likeInfoDetails, LikeStatus.DISLIKE);
+                        await LikeToPostRepository.removeUserLikeFromUser(postId, userId);
+                    }
+                    break;
+                case LikeStatus.NONE:
+
+                    await LikeToPostRepository.removeUserLikeFromUser(postId, userId);
+                    await LikeToPostRepository.removeUserDislikeFromUser(postId, userId);
+                    break;
+                default:
+                    throw new Error("Invalid likeStauts")
+            }
+
+
         }
+        return true
 
     }
 }

@@ -1,4 +1,4 @@
-import {HelpLikesInfo, LikesForPost} from "../models/likes/likes-model";
+import {LikeInfo, LikesForPost} from "../models/likes/likes-model";
 import {HelpLikesInfoMongoModel, LikesForPostMongoModel} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
@@ -21,23 +21,51 @@ export class LikeToPostRepository {
 
     static async InUserInLikeArray(id: string, userId: string) {
         try {
-            const post =
-                await LikesForPostMongoModel.findOne({commentId: id, likes: userId})
-            return !!post;// Return "true" if a document exists, "false" otherwise
+            const post = await LikesForPostMongoModel.findOne({ postId: id });
+
+            if (!post) {
+                console.log(`Post with id ${id} not found.`);
+                return;
+            }
+
+            const isInLikes = post.likes.some(like => like.userId === userId);
+            const isInDislikes = post.dislikes.some(dislike => dislike.userId === userId);
+
+            if (isInLikes) {
+                console.log(`User with id ${userId} is in the likes.`);
+                return true
+            }
+                console.log(`User with id ${userId} is in the dislikes.`);
+                return false;
+
         } catch (error) {
-            console.log("error = ", error)
-            return false;
+            console.error('Error checking likes/dislikes:', error);
+            return  false
         }
     }
 
     static async IsUserInDislikeArray(id: string, userId: string) {
         try {
-            const comment =
-                await HelpLikesInfoMongoModel.findOne({commentId: id, dislikes: userId})
-            return !!comment;// Return "true" if a document exists, "false" otherwise
-        } catch (error) {
-            console.log("error = ", error)
+            const post = await LikesForPostMongoModel.findOne({ postId: id });
+
+            if (!post) {
+                console.log(`Post with id ${id} not found.`);
+                return;
+            }
+
+
+            const isInDislikes = post.dislikes.some(dislike => dislike.userId === userId);
+
+            if (isInDislikes) {
+                console.log(`User with id ${userId} is in the dislikes.`);
+                return true
+            }
+            console.log(`User with id ${userId} is in the like.`);
             return false;
+
+        } catch (error) {
+            console.error('Error checking likes/dislikes:', error);
+            return  false
         }
     }
 
@@ -46,8 +74,9 @@ export class LikeToPostRepository {
         try {
             // тут случай, если у нас новый юзер
             //Провеить,если ли он уже в базе
-            const isUserExists = await HelpLikesInfoMongoModel.findOne({
-                commentId: id,
+            const isUserExists =
+                await LikesForPostMongoModel.findOne({
+                postId: id,
                 $or: [
                     {likes: {$in: [userId]}},
                     {dislikes: {$in: [userId]}}
@@ -57,16 +86,16 @@ export class LikeToPostRepository {
             if (isUserExists) {
                 // это для случая,если у нас 1 юзер
                 const comment =
-                    await HelpLikesInfoMongoModel
+                    await LikesForPostMongoModel
                         .updateOne(
-                            {commentId: id},
+                            {postId: id},
                             {$pull: {dislikes: userId}});
                 return !!comment;// Return true if a document exists, "false" otherwise
             } else {
                 const comment =
-                    await HelpLikesInfoMongoModel
+                    await LikesForPostMongoModel
                         .updateOne(
-                            {commentId: id},
+                            {postId: id},
                             {$push: {dislikes: userId}});
                 console.log("comment dislike= ", comment)
                 return !!comment;// Return "true" if a document exists, "false" otherwise
@@ -116,26 +145,27 @@ export class LikeToPostRepository {
         }
     }
 
-    static async updateComment(commentId: string,
-                               userId: string,
-                               likeStatus: LikeStatus) {
+    static async updatePost(postId: string,
+                            data: LikeInfo,
+
+                            likeStatus: LikeStatus) {
         try {
             if (likeStatus === LikeStatus.LIKE) {
-                const comment =
-                    await HelpLikesInfoMongoModel
+                const post =
+                    await LikesForPostMongoModel
                         .updateOne(
-                            {commentId: commentId},
-                            {$push: {likes: userId}});
-                console.log("comment like = ", comment)
-                return !!comment;// Return "true" if a document exists, "false" otherwise
+                            {postId: postId},
+                            {$push: {likes: data}});
+                console.log("post like = ", post)
+                return !!post;// Return "true" if a document exists, "false" otherwise
             } else {
-                const comment =
-                    await HelpLikesInfoMongoModel
+                const post =
+                    await LikesForPostMongoModel
                         .updateOne(
-                            {commentId: commentId},
-                            {$push: {dislikes: userId}});
-                console.log("comment dislike= ", comment)
-                return !!comment;// Return "true" if a document exists, "false" otherwise
+                            {postId: postId},
+                            {$push: {dislikes: data}});
+                console.log("post dislike= ", post)
+                return !!post;// Return "true" if a document exists, "false" otherwise
             }
         } catch (error) {
 
