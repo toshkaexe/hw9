@@ -10,7 +10,7 @@ import {CommentDbModel, commentMapper, CommentViewModel} from "../models/comment
 import {CommentMongoModel} from "../db/schemas";
 import {jwtService} from "../domain/jwt-service";
 import {LikeService} from "../domain/like-service";
-import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
+import {LikeToCommentRepository} from "../repositories/like-to-comment-repository";
 
 import {WithId} from "mongodb";
 
@@ -116,8 +116,8 @@ commentsRoute.get('/:commentId',
             console.log("fountComment=", foundComment)
             if (!foundComment) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
 
-            foundComment.likesInfo.likesCount = await CommentToLikeRepository.getNumberOfLikes(req.params.commentId)
-            foundComment.likesInfo.dislikesCount = await CommentToLikeRepository.getNumberOfDislikes(req.params.commentId)
+            foundComment.likesInfo.likesCount = await LikeToCommentRepository.getNumberOfLikes(req.params.commentId)
+            foundComment.likesInfo.dislikesCount = await LikeToCommentRepository.getNumberOfDislikes(req.params.commentId)
 
             console.log("foundComment ", foundComment)
 
@@ -126,7 +126,7 @@ commentsRoute.get('/:commentId',
             //если у  нач неавторизованный юзер
             if (!token) {
                 // получить коммент для авторизованного юзера
-                foundComment.likesInfo.myStatus = await CommentToLikeRepository.getStatusForUnauthorisatedUser(req.params.commentId)
+                foundComment.likesInfo.myStatus = await LikeToCommentRepository.getStatusForUnauthorisatedUser(req.params.commentId)
                 return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
 
             }
@@ -140,7 +140,7 @@ commentsRoute.get('/:commentId',
             console.log("userId = ", userId);
 
             foundComment.likesInfo.myStatus =
-                await CommentToLikeRepository.getCurrentUserStatus(req.params.commentId, userId)
+                await LikeToCommentRepository.getCurrentUserStatus(req.params.commentId, userId)
 
             return res.status(HTTP_STATUSES.OK_200).send(commentMapper(foundComment))
         } catch (error) {

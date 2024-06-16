@@ -2,13 +2,11 @@ import {CommentDbModel, commentMapper} from "../models/comments/comment-model";
 
 import {ObjectId, WithId} from "mongodb";
 import {CommentMongoModel} from "../db/schemas";
-import {CommentToLikeRepository} from "./comment-to-like-repository";
+import {LikeToCommentRepository} from "./like-to-comment-repository";
 
 
 export class CommentsQueryRepository {
-
     static async getCommentById(id: string) {
-
         const comment: WithId<CommentDbModel> | null =
             await CommentMongoModel.findById(id)
         console.log("in CommentsQueryRepository= ", comment)
@@ -29,15 +27,9 @@ export class CommentsQueryRepository {
             sortOptions[sortBy] = 1
         }
         const filter = {postId: postId}
-
-
         const totalCount = await CommentMongoModel.countDocuments(filter)
-
-
         const pagesCount = Math.ceil(totalCount / +pageSize)
-
         const scip = (+pageNumber - 1) * +pageSize
-
 
         const comments =
             await CommentMongoModel
@@ -51,8 +43,8 @@ export class CommentsQueryRepository {
 
         for (const comment of comments) {
             console.log(comment._id.toString())
-            comment.likesInfo.likesCount = await CommentToLikeRepository.getNumberOfLikes(comment._id.toString())
-            comment.likesInfo.dislikesCount = await CommentToLikeRepository.getNumberOfDislikes(comment._id.toString())
+            comment.likesInfo.likesCount = await LikeToCommentRepository.getNumberOfLikes(comment._id.toString())
+            comment.likesInfo.dislikesCount = await LikeToCommentRepository.getNumberOfDislikes(comment._id.toString())
         }
         console.log("..............")
         return comments ? {
@@ -95,9 +87,9 @@ export class CommentsQueryRepository {
 
         for (const comment of comments) {
             console.log(comment._id.toString())
-            comment.likesInfo.likesCount = await CommentToLikeRepository.getNumberOfLikes(comment._id.toString())
-            comment.likesInfo.dislikesCount = await CommentToLikeRepository.getNumberOfDislikes(comment._id.toString())
-            comment.likesInfo.myStatus = await CommentToLikeRepository.getCurrentUserStatus(comment._id.toString(), userId)
+            comment.likesInfo.likesCount = await LikeToCommentRepository.getNumberOfLikes(comment._id.toString())
+            comment.likesInfo.dislikesCount = await LikeToCommentRepository.getNumberOfDislikes(comment._id.toString())
+            comment.likesInfo.myStatus = await LikeToCommentRepository.getCurrentUserStatus(comment._id.toString(), userId)
         }
         console.log("..............")
         return comments ? {

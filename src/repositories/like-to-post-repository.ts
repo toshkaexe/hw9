@@ -1,17 +1,17 @@
-import {HelpLikesInfo} from "../models/likes/likes-model";
-import {HelpLikesInfoMongoModel, LikeInfoForPostSchema, LikesForPostSchema} from "../db/schemas";
+import {HelpLikesInfo, LikesForPost} from "../models/likes/likes-model";
+import {HelpLikesInfoMongoModel, LikesForPostMongoModel} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
 
 // Вспомогательный репозиторий для хранения лайков
-// пользователей к ИД-комментарию
+// пользователей к ИД-постам
 
-export class CommentToLikeRepository {
-    static async getCommentByCommentId(id: string) {
+export class LikeToPostRepository {
+    static async getPostByPostId(id: string) {
         try {
-            const comment =
-                await HelpLikesInfoMongoModel.findOne({commentId: id})
-            return !!comment;// Return "true" if a document exists, "false" otherwise
+            const post =
+                await LikesForPostMongoModel.findOne({postId: id})
+            return !!post; // Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.log("error in= ", error)
             return false;
@@ -21,9 +21,9 @@ export class CommentToLikeRepository {
 
     static async InUserInLikeArray(id: string, userId: string) {
         try {
-            const comment =
-                await HelpLikesInfoMongoModel.findOne({commentId: id, likes: userId})
-            return !!comment;// Return "true" if a document exists, "false" otherwise
+            const post =
+                await LikesForPostMongoModel.findOne({commentId: id, likes: userId})
+            return !!post;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.log("error = ", error)
             return false;
@@ -144,10 +144,10 @@ export class CommentToLikeRepository {
         }
     }
 
-    static async saveInRepo(dto: HelpLikesInfo) {
+    static async saveInRepo(dto: LikesForPost) {
         try {
             const res
-                = new HelpLikesInfoMongoModel(dto);
+                = new LikesForPostMongoModel(dto);
             return await res.save()
         } catch (error) {
             console.log(error)

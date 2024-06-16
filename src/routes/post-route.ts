@@ -24,7 +24,7 @@ import {CommentMongoModel, PostMongoModel, UserMongoModel} from "../db/schemas";
 
 import {jwtService} from "../domain/jwt-service";
 import {commentMapper} from "../models/comments/comment-model";
-import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
+import {LikeToCommentRepository} from "../repositories/like-to-comment-repository";
 import {LikeService} from "../domain/like-service";
 
 export const postRoute = Router({})

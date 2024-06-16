@@ -1,17 +1,17 @@
-import {HelpLikesInfo, LikesForPost} from "../models/likes/likes-model";
-import {HelpLikesInfoMongoModel, LikesForPostMongoModel} from "../db/schemas";
+import {HelpLikesInfo} from "../models/likes/likes-model";
+import {HelpLikesInfoMongoModel, LikeInfoForPostSchema, LikesForPostSchema} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
 
 // Вспомогательный репозиторий для хранения лайков
 // пользователей к ИД-комментарию
 
-export class PostToLikeRepository {
-    static async getPostByPostId(id: string) {
+export class LikeToCommentRepository {
+    static async getCommentByCommentId(id: string) {
         try {
-            const post =
-                await LikesForPostMongoModel.findOne({postId: id})
-            return !!post;// Return "true" if a document exists, "false" otherwise
+            const comment =
+                await HelpLikesInfoMongoModel.findOne({commentId: id})
+            return !!comment;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.log("error in= ", error)
             return false;
@@ -21,9 +21,9 @@ export class PostToLikeRepository {
 
     static async InUserInLikeArray(id: string, userId: string) {
         try {
-            const post =
-                await LikesForPostMongoModel.findOne({commentId: id, likes: userId})
-            return !!post;// Return "true" if a document exists, "false" otherwise
+            const comment =
+                await HelpLikesInfoMongoModel.findOne({commentId: id, likes: userId})
+            return !!comment;// Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.log("error = ", error)
             return false;
@@ -144,10 +144,10 @@ export class PostToLikeRepository {
         }
     }
 
-    static async saveInRepo(dto: LikesForPost) {
+    static async saveInRepo(dto: HelpLikesInfo) {
         try {
             const res
-                = new LikesForPostMongoModel(dto);
+                = new HelpLikesInfoMongoModel(dto);
             return await res.save()
         } catch (error) {
             console.log(error)

@@ -1,7 +1,7 @@
 import {HelpLikesInfo, LikeInfo, LikesForPost} from "../models/likes/likes-model";
 import {LikeStatus} from "../models/common";
-import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
-import {PostToLikeRepository} from "../repositories/post-to-like-repository";
+import {LikeToCommentRepository} from "../repositories/like-to-comment-repository";
+import {LikeToPostRepository} from "../repositories/like-to-post-repository";
 import {UserMongoModel} from "../db/schemas";
 
 export class LikeService {
@@ -12,7 +12,7 @@ export class LikeService {
 
         // проверка, что у нас есть коммент
         const comment =
-            await CommentToLikeRepository.getCommentByCommentId(commentId);
+            await LikeToCommentRepository.getCommentByCommentId(commentId);
 
         if (!comment) {
             //если нет коммента, то создаем
@@ -27,29 +27,29 @@ export class LikeService {
             switch (likeStatus) {
                 case LikeStatus.LIKE:
                     likeInfo.likes.push(userId);
-                    await CommentToLikeRepository.saveInRepo(likeInfo);
+                    await LikeToCommentRepository.saveInRepo(likeInfo);
                     break;
                 case LikeStatus.DISLIKE:
                     likeInfo.dislikes.push(userId);
-                    await CommentToLikeRepository.saveInRepo(likeInfo);
+                    await LikeToCommentRepository.saveInRepo(likeInfo);
                     break;
                 case LikeStatus.NONE:
-                    await CommentToLikeRepository.saveInRepo(likeInfo);
+                    await LikeToCommentRepository.saveInRepo(likeInfo);
                     break;
                 default:
                     throw new Error("Invalid like status");
             }
         } else {
 
-            const setUserLike = await CommentToLikeRepository.InUserInLikeArray(commentId, userId);
-            const setUserDisLike = await CommentToLikeRepository.IsUserInDislikeArray(commentId, userId);
+            const setUserLike = await LikeToCommentRepository.InUserInLikeArray(commentId, userId);
+            const setUserDisLike = await LikeToCommentRepository.IsUserInDislikeArray(commentId, userId);
 
             console.log("setUserLike = ", setUserLike);
             console.log("setUserDisLike = ", setUserDisLike);
 
             if (!setUserLike && !setUserDisLike) {
 
-                const update = await CommentToLikeRepository.updateComment(commentId, userId, likeStatus);
+                const update = await LikeToCommentRepository.updateComment(commentId, userId, likeStatus);
                 return true
             }
 
@@ -60,8 +60,8 @@ export class LikeService {
                         return;
                     } else {
 
-                        await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.LIKE);
-                        await CommentToLikeRepository.removeUserDislikeFromUser(commentId, userId);
+                        await LikeToCommentRepository.updateComment(commentId, userId, LikeStatus.LIKE);
+                        await LikeToCommentRepository.removeUserDislikeFromUser(commentId, userId);
                     }
                     break;
                 case LikeStatus.DISLIKE:
@@ -70,14 +70,14 @@ export class LikeService {
                     } else {
 
 
-                        await CommentToLikeRepository.updateComment(commentId, userId, LikeStatus.DISLIKE);
-                        await CommentToLikeRepository.removeUserLikeFromUser(commentId, userId);
+                        await LikeToCommentRepository.updateComment(commentId, userId, LikeStatus.DISLIKE);
+                        await LikeToCommentRepository.removeUserLikeFromUser(commentId, userId);
                     }
                     break;
                 case LikeStatus.NONE:
 
-                    await CommentToLikeRepository.removeUserLikeFromUser(commentId, userId);
-                    await CommentToLikeRepository.removeUserDislikeFromUser(commentId, userId);
+                    await LikeToCommentRepository.removeUserLikeFromUser(commentId, userId);
+                    await LikeToCommentRepository.removeUserDislikeFromUser(commentId, userId);
                     break;
                 default:
                     throw new Error("Invalid likeStauts")
@@ -94,7 +94,7 @@ export class LikeService {
     ) {
         // проверка, что у нас есть пост
         const post =
-            await PostToLikeRepository.getPostByPostId(postId);
+            await LikeToPostRepository.getPostByPostId(postId);
 
         if (!post) {
             //если нет коммента, то создаем
@@ -115,14 +115,14 @@ export class LikeService {
             switch (likeStatus) {
                 case LikeStatus.LIKE:
                     postLikeInfo.likes.push(likeInfoDetails);
-                    await PostToLikeRepository.saveInRepo(postLikeInfo);
+                    await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 case LikeStatus.DISLIKE:
                     postLikeInfo.dislikes.push(likeInfoDetails);
-                    await PostToLikeRepository.saveInRepo(postLikeInfo);
+                    await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 case LikeStatus.NONE:
-                    await PostToLikeRepository.saveInRepo(postLikeInfo);
+                    await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 default:
                     throw new Error("Invalid like status");
