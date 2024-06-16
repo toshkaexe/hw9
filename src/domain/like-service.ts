@@ -80,7 +80,7 @@ export class LikeService {
                     await LikeToCommentRepository.removeUserDislikeFromUser(commentId, userId);
                     break;
                 default:
-                    throw new Error("Invalid likeStauts")
+                    throw new Error("Invalid likeStatus")
             }
         }
         return true
@@ -173,6 +173,9 @@ export class LikeService {
                 case LikeStatus.DISLIKE:
                     if (previousUserDisLike) {
                         return;
+
+
+
                     } else {
                         const user = await UserMongoModel.findById(userId);
 
@@ -184,7 +187,7 @@ export class LikeService {
 
                         await LikeToPostRepository
                             .updatePost(postId, likeInfoDetails, LikeStatus.DISLIKE);
-                        await LikeToPostRepository.removeUserLikeFromUser(postId, userId);
+                        await LikeToPostRepository.removeUserLikeFromUser(postId, userId,);
                     }
                     break;
                 case LikeStatus.NONE:
