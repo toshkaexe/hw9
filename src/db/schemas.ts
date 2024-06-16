@@ -7,35 +7,58 @@ import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model"
 import {TokenDbModel} from "../models/auth/auth-models";
 import {ApiRequestModelDate, DeviceAuthSessionDb} from "../models/devices/devices-models";
 import {LikeStatus} from "../models/common";
-import {HelpLikesInfo, LikeCountInfo, LikesDBModel, UserIDS} from "../models/likes/likes-model";
+import {
+    HelpLikesInfo,
+    LikeCountInfo,
+    LikeInfo,
+    LikesDBModel,
+    LikesForPost,
+    UserIDS
+} from "../models/likes/likes-model";
+import {type} from "os";
+import request from "supertest";
 
 //------------------------------------------
-const UserCountSchema
-    = new mongoose.Schema<UserIDS>({
-    userId: { type: String, required: true }
-});
-
 // Define the HelpLikesInfo schema
 const HelpLikesInfoSchema
     = new mongoose.Schema<HelpLikesInfo>({
-    commentId: { type: String, required: true },
-    likes: { type: [String], required: true },
-    dislikes: { type: [String], required: true }
+    commentId: {type: String, required: true},
+    likes: {type: [String], required: true},
+    dislikes: {type: [String], required: true}
 });
 
 // Create the Mongoose model for HelpLikesInfo
 export const HelpLikesInfoMongoModel =
     mongoose.model('likesForComment', HelpLikesInfoSchema);
 
-
 //------------------------------------------------------------------------------------
-const likeSchema=
-new mongoose.Schema<LikesDBModel>({
-    createAt: {type: Date, required: true},
-    status: {type: String, required: true},
-    authorId: {type: String, required: true},
-    commentId: {type: String, required: true}
-});
+export const LikeInfoForPostSchema =
+    new mongoose.Schema<LikeInfo>({
+        userId: {type: String, required: true},
+        userLogin: {type: String, required: true},
+        createdAt: {type: Date, required: true}
+    }, {_id: false})
+
+
+export const LikesForPostSchema =
+    new mongoose.Schema<LikesForPost>({
+        postId: {type: String, required: true},
+        blogId: {type: String, required: true},
+        likes: [LikeInfoForPostSchema],
+        dislikes: [LikeInfoForPostSchema],
+    })
+
+export const LikesForPostMongoModel =
+    mongoose.model('likesForPosts', LikesForPostSchema);
+
+
+const likeSchema =
+    new mongoose.Schema<LikesDBModel>({
+        createAt: {type: Date, required: true},
+        status: {type: String, required: true},
+        authorId: {type: String, required: true},
+        commentId: {type: String, required: true}
+    });
 export const LikesMongoModel =
     mongoose.model('likes', likeSchema);
 
@@ -91,14 +114,14 @@ const CommentatorSchema =
     new mongoose.Schema<CommentatorInfo>({
         userId: {type: String, required: true},
         userLogin: {type: String, required: true}
-    },{_id: false});
+    }, {_id: false});
 
 const LikeInfoSchema =
     new mongoose.Schema<LikeCountInfo>({
         likesCount: {type: Number, required: true},
         dislikesCount: {type: Number, required: true},
         myStatus: {type: "String", required: true},
-    },{_id: false});
+    }, {_id: false});
 
 const CommentSchema =
     new mongoose.Schema<CommentDbModel>({
@@ -110,7 +133,6 @@ const CommentSchema =
     });
 export const CommentMongoModel =
     mongoose.model('comments', CommentSchema);
-
 
 
 //-----------------------------------------------------------------------------------------------------------------------

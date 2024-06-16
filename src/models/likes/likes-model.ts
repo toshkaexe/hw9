@@ -20,10 +20,25 @@ export type SetLike = {
 export type HelpLikesInfo = {
     commentId: string
     postId: string
-    likes:  string []
-    dislikes:  string []
+    likes: string []
+    dislikes: string []
 }
 
 export type UserIDS = {
     userId: string
+}
+//-----------------------------------------------------------
+//LikeInfo for Posts
+export type LikeInfo = {
+    userId: string
+    userLogin: string
+    createdAt: Date
+}
+
+export type LikesForPost = {
+    postId: string
+    blogId: string
+    likes: LikeInfo[]
+    dislikes: LikeInfo[]
+
 }

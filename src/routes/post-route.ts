@@ -18,13 +18,14 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {BlogViewModel} from "../models/blogs/blog-models";
 import {CommentsQueryRepository} from "../repositories/comments-query-repository";
 import {CommentsService} from "../domain/comments-service";
-import {validateComments, validateContents} from "../validators/comments-validation";
+import {validateComments, validateContents, validateLikeStatus} from "../validators/comments-validation";
 import {validateMongoId} from "../validators/validate-mongodb";
-import {PostMongoModel, UserMongoModel} from "../db/schemas";
+import {CommentMongoModel, PostMongoModel, UserMongoModel} from "../db/schemas";
 
 import {jwtService} from "../domain/jwt-service";
 import {commentMapper} from "../models/comments/comment-model";
 import {CommentToLikeRepository} from "../repositories/comment-to-like-repository";
+import {LikeService} from "../domain/like-service";
 
 export const postRoute = Router({})
 
@@ -136,7 +137,6 @@ postRoute.get('/:postId/comments',
         }
 
 
-
         const tokenWithoutBearer = token!.split(' ')[1]  //bearer fasdfasdfasdf
         console.log("tokenWithoutBearer: ", tokenWithoutBearer)
         // получить коммент для авторизованного юзера
@@ -146,7 +146,7 @@ postRoute.get('/:postId/comments',
         const comments =
             await CommentsQueryRepository.getCommentsForPostForAutorisedUser(
                 req.params.postId,
-                   userId,
+                userId,
                 pageNumber,
                 pageSize,
                 sortBy,
@@ -163,7 +163,7 @@ postRoute.get('/:postId/comments',
 
 // добавляем новый коммент
 postRoute.post('/:postId/comments',
-      validateContents(),
+    validateContents(),
     async (req: Request, res: Response) => {
 
         //достем парам postId
@@ -183,7 +183,7 @@ postRoute.post('/:postId/comments',
             return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
         }
 
-        const token= req.headers['authorization']
+        const token = req.headers['authorization']
         console.log("auth=");
         console.log(token);
 
@@ -197,7 +197,7 @@ postRoute.post('/:postId/comments',
             let userId = await jwtService.userfromToken(token1);
 
             if (!userId) {
-              return  res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
             }
 
             const user = await UserMongoModel.findById(userId)
@@ -214,3 +214,62 @@ postRoute.post('/:postId/comments',
         }
     }
 )
+
+// ставим лайк посту
+//set like status for a comment
+postRoute.put('/:postId/like-status',
+    bearerAuthUserAuth,
+    validateLikeStatus(),
+    async (req: Request, res: Response) => {
+
+        const postId = req.params.postId  //считали из path
+        console.log("postId=", postId)
+
+        //--
+        try {
+            // проверка действительно ли у нас есть данный commentId?
+            //если коммент существует, то
+            const isPostExists =
+                await PostMongoModel.findById(postId)
+            if (!isPostExists)
+            { return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)}
+
+            const likeStatus = req.body.likeStatus;
+            console.log("likeStatus=", likeStatus)
+            console.log("isPostExists=", isPostExists)
+
+            const token = req.headers['authorization']
+
+            if (!token) {
+                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
+            }
+
+
+            const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+            console.log("token1: ", token1)
+            const userId = await jwtService.userfromToken(token1);
+            if (!userId) {
+                return res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401);
+            }
+            console.log("userId=", userId)
+            // если юзер неавторизован, то не ставим лайки
+            if (!userId)
+            {   return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);}
+
+            const tmp =  await LikeService.pushLikeOrDislikeForPost(
+                userId,
+                isPostExists.blogId,
+                postId,
+                req.body.likeStatus)
+
+            console.log("pushLikeOrDislike = ", tmp)
+
+            return res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+        } catch (error: any) {
+            console.log("error  in '/:commentId/like-status',", error.message)
+            // throw new Error()
+            return res.sendStatus(HTTP_STATUSES.InternalServerError_500);
+        }
+        //--
+
+    })
