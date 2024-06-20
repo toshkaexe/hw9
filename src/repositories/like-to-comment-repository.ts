@@ -1,5 +1,5 @@
 import {HelpLikesInfo} from "../models/likes/likes-model";
-import {HelpLikesInfoMongoModel, LikeInfoForPostSchema, LikesForPostSchema} from "../db/schemas";
+import {HelpLikesInfoMongoModel} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
 

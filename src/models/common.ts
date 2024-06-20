@@ -5,6 +5,7 @@ export enum LikeStatus {
     LIKE = "Like",
     DISLIKE = "Dislike"
 }
+
 export const AvailableResolutions = [
     "P144",
     "P240",

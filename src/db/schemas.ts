@@ -10,10 +10,8 @@ import {LikeStatus} from "../models/common";
 import {
     HelpLikesInfo,
     LikeCountInfo,
-    LikeInfo,
-    LikesDBModel,
-    LikesForPost,
-    UserIDS
+    LikeForPost,
+
 } from "../models/likes/likes-model";
 import {type} from "os";
 import request from "supertest";
@@ -32,36 +30,20 @@ export const HelpLikesInfoMongoModel =
     mongoose.model('likesForComment', HelpLikesInfoSchema);
 
 //------------------------------------------------------------------------------------
-export const LikeInfoForPostSchema =
-    new mongoose.Schema<LikeInfo>({
-        userId: {type: String, required: true},
-        userLogin: {type: String, required: true},
-        createdAt: {type: Date, required: true}
-    }, {_id: false})
 
-
-export const LikesForPostSchema =
-    new mongoose.Schema<LikesForPost>({
+export const likeForPostSchema =
+    new mongoose.Schema<LikeForPost>({
         postId: {type: String, required: true},
         blogId: {type: String, required: true},
-        likes: [LikeInfoForPostSchema],
-        dislikes: [LikeInfoForPostSchema],
+        userId: {type: String, required: true},
+        userLogin: {type: String, required: true},
+        status:  {type: String, enum: LikeStatus, required: true},
+        updated: {type: Date, required: true}
     })
 
-export const LikesForPostMongoModel =
-    mongoose.model('likesForPosts', LikesForPostSchema);
-
-
-const likeSchema =
-    new mongoose.Schema<LikesDBModel>({
-        createAt: {type: Date, required: true},
-        status: {type: String, required: true},
-        authorId: {type: String, required: true},
-        commentId: {type: String, required: true}
-    });
-export const LikesMongoModel =
-    mongoose.model('likes', likeSchema);
-
+export const LikeToPostModel =
+    mongoose.model('likeForPost', likeForPostSchema);
+//----------------------------------------------------------------------
 const blogSchema
     = new mongoose.Schema<BlogDbModel>({
     name: {type: String, required: true},

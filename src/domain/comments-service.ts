@@ -1,10 +1,8 @@
-import {CommentatorInfo, CommentDbModel, CommentViewModel} from "../models/comments/comment-model";
+import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model";
 import {CommentsRepository} from "../repositories/comments-repository";
-import {OutputPostModel} from "../models/posts/posts-models";
-import {PostsQueryRepository} from "../repositories/posts-query-repository";
 import {CommentsQueryRepository} from "../repositories/comments-query-repository";
-import {LikeCountInfo, LikesDBModel, SetLike} from "../models/likes/likes-model";
-import {LikesMongoModel} from "../db/schemas";
+import {LikeCountInfo} from "../models/likes/likes-model";
+
 
 export class CommentsService {
     static async UpdateComment(id: string, body: CommentDbModel, userId: string) {

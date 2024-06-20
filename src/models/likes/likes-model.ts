@@ -24,20 +24,14 @@ export type HelpLikesInfo = {
     dislikes: string []
 }
 
-export type UserIDS = {
-    userId: string
-}
+
 //-----------------------------------------------------------
-//LikeInfo for Posts
-export type LikeInfo = {
-    userId: string
-    userLogin: string
-    createdAt: Date
+export type LikeForPost = {
+    postId: string,
+    blogId: string,
+    userId: string,
+    userLogin: string,
+    status: LikeStatus,
+    updated: Date
 }
 
-export type LikesForPost = {
-    postId: string
-    blogId: string
-    likes: LikeInfo[]
-    dislikes: LikeInfo[]
-}

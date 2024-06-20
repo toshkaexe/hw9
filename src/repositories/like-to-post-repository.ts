@@ -1,5 +1,5 @@
-import {LikeInfo, LikesForPost} from "../models/likes/likes-model";
-import {HelpLikesInfoMongoModel, LikesForPostMongoModel} from "../db/schemas";
+import {LikeForPost} from "../models/likes/likes-model";
+import {HelpLikesInfoMongoModel, LikeToPostModel} from "../db/schemas";
 import {LikeStatus} from "../models/common";
 
 
@@ -7,10 +7,16 @@ import {LikeStatus} from "../models/common";
 // пользователей к ИД-постам
 
 export class LikeToPostRepository {
-    static async getPostByPostId(id: string) {
+    static async findIfUserSetLikeOrDislike(postId: string,
+                                            userId: string,
+                                            blogId: string) {
         try {
             const post =
-                await LikesForPostMongoModel.findOne({postId: id})
+                await LikeToPostModel.findOne({
+                    postId: postId,
+                    userId: userId,
+                    blogId: blogId
+                })
             return !!post; // Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.log("error in= ", error)
@@ -19,50 +25,38 @@ export class LikeToPostRepository {
     }
 
 
-    static async InUserInLikeArray(id: string, userId: string) {
+    static async InUserInLikeArray(postId: string,
+                                   userId: string,
+                                   blogId: string) {
         try {
-            const post = await LikesForPostMongoModel.findOne({postId: id});
+            const post = await LikeToPostModel.findOne(
+                {
+                    postId: postId,
+                    userId: userId,
+                    blogId: blogId,
+                    status: LikeStatus.LIKE
+                });
 
-            if (!post) {
-                console.log(`Post with id ${id} not found.`);
-                return;
-            }
-
-            const isInLikes = post.likes.some(like => like.userId === userId);
-            const isInDislikes = post.dislikes.some(dislike => dislike.userId === userId);
-
-            if (isInLikes) {
-                console.log(`User with id ${userId} is in the likes.`);
-                return true
-            }
-            console.log(`User with id ${userId} is in the dislikes.`);
-            return false;
-
+            return !!post  // Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.error('Error checking likes/dislikes:', error);
             return false
         }
     }
 
-    static async IsUserInDislikeArray(id: string, userId: string) {
+    static async IsUserInDislikeArray(postId: string,
+                                      userId: string,
+                                      blogId: string) {
         try {
-            const post = await LikesForPostMongoModel.findOne({postId: id});
+            const post = await LikeToPostModel.findOne(
+                {
+                    postId: postId,
+                    userId: userId,
+                    blogId: blogId,
+                    status: LikeStatus.DISLIKE
+                });
 
-            if (!post) {
-                console.log(`Post with id ${id} not found.`);
-                return;
-            }
-
-
-            const isInDislikes = post.dislikes.some(dislike => dislike.userId === userId);
-
-            if (isInDislikes) {
-                console.log(`User with id ${userId} is in the dislikes.`);
-                return true
-            }
-            console.log(`User with id ${userId} is in the like.`);
-            return false;
-
+            return !!post  // Return "true" if a document exists, "false" otherwise
         } catch (error) {
             console.error('Error checking likes/dislikes:', error);
             return false
@@ -70,105 +64,29 @@ export class LikeToPostRepository {
     }
 
 
-    static async removeUserDislikeFromUser(id: string, userId: string) {
+    static async updatePost(
+        postId: string,
+        userId: string,
+        blogId: string,
+        status1: LikeStatus
+    ) {
+
+        console.log("update post")
         try {
-            // тут случай, если у нас новый юзер
-            //Провеить,еслть ли он уже в базе
-            const post
-                = await LikesForPostMongoModel.findOne({postId: id})
+            const updatedLike
+                = await LikeToPostModel.findOne(
+                {
+                    postId: postId,
+                    blogId: blogId,
+                    userId: userId
+                })
+            if(!updatedLike) return false
 
-            const isInLikes = post!.likes.some(like => like.userId === userId);
-            const isInDislikes = post!.dislikes.some(dislike => dislike.userId === userId);
+            updatedLike!.status = status1;
+            updatedLike!.updated = new Date();
 
-            const isUserExists = isInLikes || isInDislikes;
-
-
-            if (isUserExists) {
-                // это для случая,если у нас 1 юзер
-                const removeDislike =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {postId: id},
-                            {$pull: {dislike: userId}});
-                return !!removeDislike;// Return true if a document exists, "false" otherwise
-
-            } else {
-                const pushLike =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {commentId: id},
-                            {$push: {likes: userId}});
-                console.log("post dislike= ", pushLike)
-                return !!pushLike;// Return "true" if a document exists, "false" otherwise
-            }
-
-        } catch (error) {
-            console.log("error = ", error)
-            return false;
-        }
-    }
-
-    static async removeUserLikeFromUser(id: string, userId: string) {
-        try {
-            // тут случай, если у нас новый юзер
-            //Провеить,еслть ли он уже в базе
-            const post
-                = await LikesForPostMongoModel.findOne({
-                postId: id
-            })
-
-            const isInLikes = post!.likes.some(like => like.userId === userId);
-            const isInDislikes = post!.dislikes.some(dislike => dislike.userId === userId);
-
-            const isUserExists = isInLikes || isInDislikes;
-
-
-            if (isUserExists) {
-                // это для случая,если у нас 1 юзер
-                const removeLike =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {postId: id},
-                            {$pull: {likes: userId}});
-                return !!removeLike;// Return true if a document exists, "false" otherwise
-
-            } else {
-                const pushDislike =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {commentId: id},
-                            {$push: {dislike: userId}});
-                console.log("post dislike= ", pushDislike)
-                return !!pushDislike;// Return "true" if a document exists, "false" otherwise
-            }
-
-        } catch (error) {
-            console.log("error = ", error)
-            return false;
-        }
-    }
-
-    static async updatePost(postId: string,
-                            data: LikeInfo,
-                            likeStatus: LikeStatus) {
-        try {
-            if (likeStatus === LikeStatus.LIKE) {
-                const post =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {postId: postId},
-                            {$push: {likes: data}});
-                console.log("post like = ", post)
-                return !!post;// Return "true" if a document exists, "false" otherwise
-            } else {
-                const post =
-                    await LikesForPostMongoModel
-                        .updateOne(
-                            {postId: postId},
-                            {$push: {dislikes: data}});
-                console.log("post dislike= ", post)
-                return !!post;// Return "true" if a document exists, "false" otherwise
-            }
+            console.log("updatedLike=", updatedLike)
+            return true;
         } catch (error) {
 
             console.log("error = ", error)
@@ -176,10 +94,30 @@ export class LikeToPostRepository {
         }
     }
 
-    static async saveInRepo(dto: LikesForPost) {
+    static async FindLikeOrDislikeForPost(postId: string,
+                                          blogId: string,
+                                          userId: string,
+    ) {
+        try {
+            const filter = {postId, blogId, userId};
+            const document =
+                await LikeToPostModel.findOne(filter);
+
+            if (!document) {
+                console.log('LikeForPost found:', document);
+                return document!.status
+            }
+            return false
+        } catch (err) {
+            console.error('Error finding LikeForPost:', err);
+            return false
+        }
+    }
+
+    static async saveInRepo(dto: LikeForPost) {
         try {
             const res
-                = new LikesForPostMongoModel(dto);
+                = new LikeToPostModel(dto);
             return await res.save()
         } catch (error) {
             console.log(error)
@@ -262,4 +200,14 @@ export class LikeToPostRepository {
 
     }
 
+
+}
+
+// Функция для удаления объекта с определенным userId
+function removeLikeById(likes: LikeForPost[], userId: string): LikeForPost[] {
+    const index = likes.findIndex(like => like.userId === userId);
+    if (index !== -1) {
+        likes.splice(index, 1);
+    }
+    return likes;
 }

@@ -1,8 +1,8 @@
-import {HelpLikesInfo, LikeInfo, LikesForPost} from "../models/likes/likes-model";
+import {HelpLikesInfo, LikeForPost} from "../models/likes/likes-model";
 import {LikeStatus} from "../models/common";
 import {LikeToCommentRepository} from "../repositories/like-to-comment-repository";
 import {LikeToPostRepository} from "../repositories/like-to-post-repository";
-import {UserMongoModel} from "../db/schemas";
+import {LikeToPostModel, UserMongoModel} from "../db/schemas";
 
 export class LikeService {
     static async pushLikeOrDislike(userId: string,
@@ -94,114 +94,114 @@ export class LikeService {
     ) {
         // проверка, что у нас есть пост
         const post =
-            await LikeToPostRepository.getPostByPostId(postId);
+            await LikeToPostRepository.findIfUserSetLikeOrDislike(postId,
+                userId,
+                blogId);
+
 
         if (!post) {
-            //если нет коммента, то создаем
+            //если нет лайка к постам, то создаем
             // create new record in db
-            const postLikeInfo: LikesForPost = {
+            const user =
+                await UserMongoModel.findById(userId);
+            const postLikeInfo: LikeForPost = {
                 postId: postId,
                 blogId: blogId,
-                likes: [],
-                dislikes: []
-            }
-            const user = await UserMongoModel.findById(userId);
-            const likeInfoDetails: LikeInfo = {
                 userId: userId,
                 userLogin: user!.userData.login,
-                createdAt: new Date()
+                status: likeStatus,
+                updated: new Date()
             }
+
             // и пушим лайк или дизлайк
             switch (likeStatus) {
                 case LikeStatus.LIKE:
-                    postLikeInfo.likes.push(likeInfoDetails);
                     await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 case LikeStatus.DISLIKE:
-                    postLikeInfo.dislikes.push(likeInfoDetails);
                     await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 case LikeStatus.NONE:
-                    await LikeToPostRepository.saveInRepo(postLikeInfo);
                     break;
                 default:
                     throw new Error("Invalid like status");
+
             }
+            return true
+
         } else {
-            //
-            const previousUserLike = await LikeToPostRepository.InUserInLikeArray(postId, userId);
-            const previousUserDisLike = await LikeToPostRepository.IsUserInDislikeArray(postId, userId);
-            //
-            console.log("previousUserLike = ", previousUserLike);
-            console.log("previousUserDisLike = ", previousUserDisLike);
-            console.log("UserLike = ", likeStatus);
-            //
-            if (!previousUserLike && !previousUserDisLike) {
 
-                const user = await UserMongoModel.findById(userId);
-
-                const likeInfoDetails: LikeInfo = {
+            const document =
+                await LikeToPostModel.findOne({
+                    postId: postId,
+                    blogId: blogId,
                     userId: userId,
-                    userLogin: user!.userData.login,
-                    createdAt: new Date()
+                });
+
+            console.log("-------> document", document)
+            console.log(document!.status)
+
+            console.log(document!.status == likeStatus)
+            console.log(document!.status === likeStatus)
+
+            console.log(document!.status === LikeStatus.LIKE)
+
+            console.log(document!.status === LikeStatus.DISLIKE)
+            if (!document) {
+                return false
+            }
+
+            const user =
+                await UserMongoModel.findById(userId);
+
+            if (document!.status === likeStatus) {
+                return true
+            } else {
+                switch (likeStatus) {
+                    case LikeStatus.LIKE:
+                        // Change to dislike
+                        console.log("----need to change to dislike");
+                        await deleteLike(postId, blogId, userId);
+                        return await saveLike(postId, blogId, userId, user!.userData.login, likeStatus);
+
+                    case LikeStatus.DISLIKE:
+                        // Change to like
+                        console.log("----need to change to like");
+                        await deleteLike(postId, blogId, userId);
+                        return await saveLike(postId, blogId, userId, user!.userData.login, likeStatus);
+
+                    case LikeStatus.NONE:
+                        console.log("----we are in none");
+                        await deleteLike(postId, blogId, userId);
+                        return false;
+
+                    default:
+                        throw new Error(`Unexpected like status: ${likeStatus}`);
                 }
 
-                const update = await LikeToPostRepository
-                    .updatePost(postId, likeInfoDetails, likeStatus);
-                return true
             }
-
-
-            switch (likeStatus) {
-                case LikeStatus.LIKE:
-                    if (previousUserLike) {
-                        return;
-                    } else {
-                        const user = await UserMongoModel.findById(userId);
-
-                        const likeInfoDetails: LikeInfo = {
-                            userId: userId,
-                            userLogin: user!.userData.login,
-                            createdAt: new Date()
-                        }
-                        await LikeToPostRepository
-                            .updatePost(postId, likeInfoDetails, LikeStatus.LIKE);
-                        await LikeToPostRepository
-                            .removeUserDislikeFromUser(postId, userId);
-                    }
-                    break;
-                case LikeStatus.DISLIKE:
-                    if (previousUserDisLike) {
-                        return;
-
-
-
-                    } else {
-                        const user = await UserMongoModel.findById(userId);
-
-                        const likeInfoDetails: LikeInfo = {
-                            userId: userId,
-                            userLogin: user!.userData.login,
-                            createdAt: new Date()
-                        }
-
-                        await LikeToPostRepository
-                            .updatePost(postId, likeInfoDetails, LikeStatus.DISLIKE);
-                        await LikeToPostRepository.removeUserLikeFromUser(postId, userId,);
-                    }
-                    break;
-                case LikeStatus.NONE:
-
-                    await LikeToPostRepository.removeUserLikeFromUser(postId, userId);
-                    await LikeToPostRepository.removeUserDislikeFromUser(postId, userId);
-                    break;
-                default:
-                    throw new Error("Invalid likeStauts")
-            }
-
 
         }
-        return true
 
+        async function deleteLike(postId: string, blogId: string, userId: string) {
+            const document = await LikeToPostModel.deleteOne({
+                postId: postId,
+                blogId: blogId,
+                userId: userId,
+            });
+            console.log("Deleted document:", document);
+        }
+
+        async function saveLike(postId: string, blogId: string, userId: string, userLogin: string, status: LikeStatus) {
+            const postLikeInfo: LikeForPost = {
+                postId: postId,
+                blogId: blogId,
+                userId: userId,
+                userLogin: userLogin,
+                status: status,
+                updated: new Date()
+            };
+            return await LikeToPostRepository.saveInRepo(postLikeInfo);
+        }
     }
 }
