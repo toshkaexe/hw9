@@ -52,8 +52,6 @@ export class LikeService {
                 const update = await LikeToCommentRepository.updateComment(commentId, userId, likeStatus);
                 return true
             }
-
-
             switch (likeStatus) {
                 case LikeStatus.LIKE:
                     if (setUserLike) {
@@ -68,14 +66,11 @@ export class LikeService {
                     if (setUserDisLike) {
                         return;
                     } else {
-
-
                         await LikeToCommentRepository.updateComment(commentId, userId, LikeStatus.DISLIKE);
                         await LikeToCommentRepository.removeUserLikeFromUser(commentId, userId);
                     }
                     break;
                 case LikeStatus.NONE:
-
                     await LikeToCommentRepository.removeUserLikeFromUser(commentId, userId);
                     await LikeToCommentRepository.removeUserDislikeFromUser(commentId, userId);
                     break;
@@ -97,8 +92,6 @@ export class LikeService {
             await LikeToPostRepository.findIfUserSetLikeOrDislike(postId,
                 userId,
                 blogId);
-
-
         if (!post) {
             //если нет лайка к постам, то создаем
             // create new record in db
@@ -125,32 +118,18 @@ export class LikeService {
                     break;
                 default:
                     throw new Error("Invalid like status");
-
             }
             return true
-
         } else {
-
             const document =
                 await LikeToPostModel.findOne({
                     postId: postId,
                     blogId: blogId,
                     userId: userId,
                 });
-
-            console.log("-------> document", document)
-            console.log(document!.status)
-
-            console.log(document!.status == likeStatus)
-            console.log(document!.status === likeStatus)
-
-            console.log(document!.status === LikeStatus.LIKE)
-
-            console.log(document!.status === LikeStatus.DISLIKE)
             if (!document) {
                 return false
             }
-
             const user =
                 await UserMongoModel.findById(userId);
 
@@ -178,9 +157,7 @@ export class LikeService {
                     default:
                         throw new Error(`Unexpected like status: ${likeStatus}`);
                 }
-
             }
-
         }
 
         async function deleteLike(postId: string, blogId: string, userId: string) {
