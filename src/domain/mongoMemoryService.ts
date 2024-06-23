@@ -1,5 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import {AppSettings} from "../settings";
+import {appConfig} from "../settings";
 import mongoose from 'mongoose'
 import {runDBMongoose} from "../db/db";
 
@@ -8,8 +8,8 @@ function getMongoMemoryService() {
 
     async function connect() {
         memoryServer = await MongoMemoryServer.create()
-        AppSettings.MONGO_URI = memoryServer.getUri()
-        AppSettings.DB_NAME = 'blogs-hws'
+        appConfig.MONGO_URI = memoryServer.getUri()
+        appConfig.DB_NAME = 'blogs-hws'
         await runDBMongoose()
     }
 

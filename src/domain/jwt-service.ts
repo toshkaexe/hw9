@@ -1,6 +1,6 @@
 import {ObjectId} from "mongodb";
 import jwt from 'jsonwebtoken';
-import {AppSettings} from "../settings";
+import {appConfig} from "../settings";
 import {isNullOrUndefined} from "util";
 
 const secretKey = '_your_secret_key_';

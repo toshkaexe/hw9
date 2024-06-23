@@ -1,4 +1,4 @@
-import {app, AppSettings} from "./settings";
+import {app, appConfig} from "./settings";
 import dotenv from "dotenv";
 import {runDBMongoose} from "./db/db";
 dotenv.config();

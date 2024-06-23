@@ -16,7 +16,7 @@ import {errorMessagesHandleService, HTTP_STATUSES} from "../models/common";
 import {AuthQueryRepository} from "../repositories/auth-query-repository";
 
 import {BryptService} from "./brypt-service";
-import {AppSettings} from "../settings";
+import {appConfig} from "../settings";
 import dotenv from "dotenv";
 
 dotenv.config();

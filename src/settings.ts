@@ -14,13 +14,16 @@ import {deviceRoute} from "./routes/device-route";
 import dotenv from "dotenv";
 
 dotenv.config();
-export const AppSettings = {
+export const appConfig = {
 
     PORT: process.env.PORT,
     ACCESS_TOKEN_EXPIRES: '1h',
     REFRESH_TOKEN_EXPIRES: '1h',
     MONGO_URI: process.env.MONGO_URI_CLOUD,
-    DB_NAME: process.env.DB_NAME
+    DB_NAME: process.env.DB_NAME,
+
+    ADMIN_LOGIN: "admin",
+    ADMIN_PASS: "qwerty"
     }
 
 export const RoutesList = {
