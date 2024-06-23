@@ -1,4 +1,4 @@
-import {CreatePostModel, UpdatePostModel} from "../models/posts/posts-models";
+import {CreatePostModel, PostDbModel, UpdatePostModel} from "../models/posts/posts-models";
 
 import {ObjectId, WithId} from "mongodb";
 
@@ -8,20 +8,13 @@ import {postMapper} from "../models/posts/posts-models";
 import {PostMongoModel} from "../db/schemas";
 
 export class PostsRepository {
-    static async savePost(data: CreatePostModel) {
-        const createdAt = new Date();
+    static async savePost(data: PostDbModel) {
         const blog = await BlogRepository.getBlogById(data.blogId);
 
         console.log("createPost = ", blog)
         if (blog) {
-            const newPost = {
-                ...data,
-                blogName: blog.name,
-                createdAt: createdAt.toISOString()
-            }
-            console.log("newPost= ", newPost)
-            //const result = await PostMongoModel.create(newPost);
-            const result =  new PostMongoModel(newPost)
+
+            const result =  new PostMongoModel(data)
             await result.save();
             return result;
         } else {

@@ -15,14 +15,28 @@ export class PostsService {
 
         if (!blog) return null
 
+        const createdAt = new Date();
+
         const newPost: PostDbModel = {
             title: inputData.title,
             shortDescription: inputData.shortDescription,
             content: inputData.content,
             blogId: inputData.blogId,
             blogName: blog.name,
-            createdAt: new Date().toISOString()
+            createdAt: createdAt.toISOString(),
+            extendedLikesInfo:
+                {
+                    likesCount: 0,
+                    dislikesCount: 0,
+                    myStatus: "None",
+                    newestLikes: [{
+                        addedAt: createdAt.toISOString(),
+                        userId: "string",
+                        login: "string"
+                    }]
+                }
         }
+
         console.log("in create Post")
         const post = await PostsRepository.savePost(newPost);
         return post

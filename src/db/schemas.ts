@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import {BlogDbModel} from "../models/blogs/blog-models";
-import {PostDbModel} from "../models/posts/posts-models";
+import {ExtendedLikesInfo, NamesList, PostDbModel} from "../models/posts/posts-models";
 import {UserAccountData, UserConfirmationData, UserDbModel} from "../models/users/users-models";
 import {ObjectId} from "mongodb";
 import {CommentatorInfo, CommentDbModel} from "../models/comments/comment-model";
@@ -54,6 +54,23 @@ const blogSchema
 });
 export const BlogMongoModel =
     mongoose.model('blogs', blogSchema);
+//---------------------------------------------------------------------
+//--------------POSTS-------------------
+// Define the NamesList schema
+const NamesListSchema = new mongoose.Schema<NamesList>({
+    addedAt: { type: String, required: true },
+    userId: { type: String, required: true },
+    login: { type: String, required: true }
+},{_id: false});
+
+// Define the ExtendedLikesInfo schema
+const ExtendedLikesInfo =
+    new mongoose.Schema<ExtendedLikesInfo>({
+        likesCount: { type: Number, required: true },
+        dislikesCount: { type: Number, required: true },
+        myStatus: { type: String, required: true },
+        newestLikes: [NamesListSchema]
+    });
 
 const PostSchema
     = new mongoose.Schema<PostDbModel>({
@@ -62,8 +79,10 @@ const PostSchema
     content: {type: String, required: true},
     blogId: {type: String, required: true},
     blogName: {type: String, required: true},
-    createdAt: {type: String, required: true}
+    createdAt: {type: String, required: true},
+    extendedLikesInfo: ExtendedLikesInfo
 });
+
 export const PostMongoModel = mongoose.model('posts', PostSchema);
 
 //--------------------------------------------------------------------

@@ -4,7 +4,7 @@ import {runDBMongoose} from "./db/db";
 dotenv.config();
 
 
-const port =process.env.PORT
+const port = 3000// process.env.PORT
 export const startApp =async ()=>{
     await runDBMongoose()
     app.listen(port,()=>{
