@@ -43,6 +43,9 @@ export class PostsQueryRepository {
         const post: WithId<PostDbModel> | null = await PostMongoModel.findById(id)
 
 
+        console.log("find post by id=", post)
+
+
         console.log("post=", post)
         return post ? postMapper(post) : null
     }
