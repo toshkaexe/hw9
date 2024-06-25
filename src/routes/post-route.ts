@@ -61,9 +61,36 @@ postRoute.post('/',
     })
 
 postRoute.get('/:postId', async (req: Request, res: Response) => {
+
+
+    const token = req.headers['authorization']
+
+    if (!token) {
+        const foundPost=
+            await PostsQueryRepository.findPostById(req.params.postId, null)
+        foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+    return
+    }
+
+    const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+    console.log("token1: ", token1)
+    const userId = await jwtService.userfromToken(token1);
+    if (!userId) {
+        const foundPost: OutputPostModel | null =
+            await PostsQueryRepository.findPostById(req.params.postId, null)
+        foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+        return
+    }
+    console.log("userId=", userId)
+
+    // если юзер неавторизован, то не ставим лайки
+    if (!userId) {
+        return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+    }
+    console.log("user===", userId)
     const foundPost: OutputPostModel | null =
-        await PostsQueryRepository.findPostById(req.params.postId)
-    foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+        await PostsQueryRepository.findPostById(req.params.postId, userId)
+    return foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 })
 //put
 postRoute.put('/:postId',
@@ -74,7 +101,9 @@ postRoute.put('/:postId',
         const blogId = req.body.blogId
         const postId = req.params.postId
         const blogExist: BlogViewModel | null = await BlogsQueryRepository.findBlogById(blogId)
-        const postExist = await PostsQueryRepository.findPostById(postId)
+        //---
+        const postExist =
+            await PostsQueryRepository.findPostById(postId, null)
 
         if (!blogExist) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send("error blog")
@@ -103,7 +132,7 @@ postRoute.get('/:postId/comments',
         console.log("мы в контроллере")
         const postId = req.params.postId
         const foundPost: OutputPostModel | null =
-            await PostsQueryRepository.findPostById(postId)
+            await PostsQueryRepository.findPostById(postId, null)
         console.log("foundPost: ", foundPost)
         if (!foundPost) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
@@ -231,8 +260,9 @@ postRoute.put('/:postId/like-status',
             //если коммент существует, то
             const isPostExists =
                 await PostMongoModel.findById(postId)
-            if (!isPostExists)
-            { return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)}
+            if (!isPostExists) {
+                return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+            }
 
             const likeStatus = req.body.likeStatus;
             console.log("likeStatus=", likeStatus)
@@ -253,10 +283,11 @@ postRoute.put('/:postId/like-status',
             }
             console.log("userId=", userId)
             // если юзер неавторизован, то не ставим лайки
-            if (!userId)
-            {   return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);}
+            if (!userId) {
+                return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+            }
 
-            const tmp =  await LikeService.pushLikeOrDislikeForPost(
+            const tmp = await LikeService.pushLikeOrDislikeForPost(
                 userId,
                 isPostExists.blogId,
                 postId,

@@ -4,6 +4,7 @@ import {PostDbModel, postMapper, OutputPostModel} from "../models/posts/posts-mo
 import {ObjectId, WithId} from "mongodb";
 import {PostMongoModel} from "../db/schemas";
 import {LikeForPostsService} from "../domain/like-for-posts-service";
+import {LikesForPostsRepository} from "./likes-for-posts-repository";
 
 export class PostsQueryRepository {
 
@@ -38,7 +39,7 @@ export class PostsQueryRepository {
         }
     }
 
-    static async findPostById(id: string): Promise<OutputPostModel | null> {
+    static async findPostById(id: string, userId: *): Promise<OutputPostModel | null> {
 
         if (!ObjectId.isValid(id)) return null
         const post: WithId<PostDbModel> | null = await PostMongoModel.findById(id)
@@ -48,6 +49,14 @@ export class PostsQueryRepository {
 
         post!.extendedLikesInfo.likesCount=await LikeForPostsService.getLikes(id)
         post!.extendedLikesInfo.dislikesCount=await LikeForPostsService.getDislikes(id)
+
+        if (userId == null) {
+            post!.extendedLikesInfo.myStatus="None"
+            console.log("post=", post)
+            return post ? postMapper(post) : null
+        }
+        post!.extendedLikesInfo.myStatus= await LikesForPostsRepository.getMyStatus(id, userId)
+
 
         console.log("post=", post)
         return post ? postMapper(post) : null
