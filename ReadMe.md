@@ -1,5 +1,5 @@
-## Для всех проектов спринт 1-2
-### инициализируем node приложение:
+## For the all sprins
+### initialize the node application::
 yarn init --yes
 
 ### устанавливаем express:
