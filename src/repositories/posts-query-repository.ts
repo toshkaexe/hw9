@@ -3,6 +3,7 @@ import {PostDbModel, postMapper, OutputPostModel} from "../models/posts/posts-mo
 
 import {ObjectId, WithId} from "mongodb";
 import {PostMongoModel} from "../db/schemas";
+import {LikeForPostsService} from "../domain/like-for-posts-service";
 
 export class PostsQueryRepository {
 
@@ -45,6 +46,8 @@ export class PostsQueryRepository {
 
         console.log("find post by id=", post)
 
+        post!.extendedLikesInfo.likesCount=await LikeForPostsService.getLikes(id)
+        post!.extendedLikesInfo.dislikesCount=await LikeForPostsService.getDislikes(id)
 
         console.log("post=", post)
         return post ? postMapper(post) : null
