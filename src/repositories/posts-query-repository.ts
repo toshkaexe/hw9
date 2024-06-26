@@ -66,11 +66,8 @@ export class PostsQueryRepository {
         console.log("------------array>,", array)
         post!.extendedLikesInfo.newestLikes = array;
         console.log("post=", post)
-
         if (!post) return null
-
         const afterMapping = postMapper(post)
-
         afterMapping.extendedLikesInfo.newestLikes= array
 
         console.log("afterMapping=", afterMapping)
