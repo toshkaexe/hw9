@@ -58,12 +58,12 @@ export class CommentsQueryRepository {
     }
 
 
-    static async getCommentsForPostForAutorisedUser(postId: string,
-                                                    userId: string,
-                                                    pageNumber: number,
-                                                    pageSize: number,
-                                                    sortBy: string,
-                                                    sortDirection: string) {
+    static async getCommentsForPostForAuthorizedUser(postId: string,
+                                                     userId: string,
+                                                     pageNumber: number,
+                                                     pageSize: number,
+                                                     sortBy: string,
+                                                     sortDirection: string) {
 
 
         let sortOptions: { [key: string]: 1 | -1 } = {

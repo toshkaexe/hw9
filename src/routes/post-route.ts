@@ -31,11 +31,33 @@ export const postRoute = Router({})
 
 //get
 postRoute.get('/', async (req: Request, res: Response) => {
-    const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
 
-    const foundPosts =
-        await PostsQueryRepository.findPosts(pageNumber, pageSize, sortBy, sortDirection)
-    res.send(foundPosts)
+
+    const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
+    // для авторизованного юзера и для неавторизованного юзера
+    const token = req.headers['authorization']
+    if (!token) {
+        const foundPosts =
+            await PostsQueryRepository.findPostsForUnauthorizedUser(pageNumber, pageSize, sortBy, sortDirection)
+        res.send(foundPosts)
+        return
+    }
+
+    const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+    console.log("token1: ", token1)
+    const userId = await jwtService.userfromToken(token1);
+    if (!userId) {
+
+        const foundPosts =
+            await PostsQueryRepository.findPostsForAuthorizedUser(pageNumber, pageSize, sortBy, sortDirection, userId)
+        res.send(foundPosts)
+        return
+
+    }
+
+    //для неавторизованного
+
+
 })
 
 postRoute.post('/',
@@ -62,35 +84,47 @@ postRoute.post('/',
 
 postRoute.get('/:postId', async (req: Request, res: Response) => {
 
+    //проверка, что существует  postId
+    const postId = req.params.postId;
+    try {
+        const verifyPostId = await PostMongoModel.findById(postId);
+        if (!verifyPostId) return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 
-    const token = req.headers['authorization']
 
-    if (!token) {
-        const foundPost=
-            await PostsQueryRepository.findPostById(req.params.postId, null)
-        foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-    return
-    }
+        const token = req.headers['authorization']
 
-    const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
-    console.log("token1: ", token1)
-    const userId = await jwtService.userfromToken(token1);
-    if (!userId) {
+        if (!token) {
+            const foundPost =
+                await PostsQueryRepository.findPostById(req.params.postId, "fake", false)
+            foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+            return
+        }
+
+        const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+        console.log("token1: ", token1)
+        const userId = await jwtService.userfromToken(token1);
+        console.log("usr=====", userId)
+        if (!userId) {
+            const foundPost: OutputPostModel | null =
+                await PostsQueryRepository.findPostById(req.params.postId, "fake", false)
+            foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+            return
+        }
+        console.log("userId=", userId)
+
+        // если юзер неавторизован, то не ставим лайки
+        if (!userId) {
+            return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+        }
+        console.log("user===", userId)
         const foundPost: OutputPostModel | null =
-            await PostsQueryRepository.findPostById(req.params.postId, null)
-        foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
-        return
-    }
-    console.log("userId=", userId)
+            await PostsQueryRepository.findPostById(req.params.postId, userId, true)
+        return foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
+    } catch (error) {
 
-    // если юзер неавторизован, то не ставим лайки
-    if (!userId) {
-        return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+        console.log("error in get posts------>,", error)
+        return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
     }
-    console.log("user===", userId)
-    const foundPost: OutputPostModel | null =
-        await PostsQueryRepository.findPostById(req.params.postId, userId)
-    return foundPost ? res.status(HTTP_STATUSES.OK_200).send(foundPost) : res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
 })
 //put
 postRoute.put('/:postId',
@@ -103,7 +137,7 @@ postRoute.put('/:postId',
         const blogExist: BlogViewModel | null = await BlogsQueryRepository.findBlogById(blogId)
         //---
         const postExist =
-            await PostsQueryRepository.findPostById(postId, null)
+            await PostsQueryRepository.findPostById(postId, "fake", false)
 
         if (!blogExist) {
             res.status(HTTP_STATUSES.NOT_FOUND_404).send("error blog")
@@ -132,7 +166,7 @@ postRoute.get('/:postId/comments',
         console.log("мы в контроллере")
         const postId = req.params.postId
         const foundPost: OutputPostModel | null =
-            await PostsQueryRepository.findPostById(postId, null)
+            await PostsQueryRepository.findPostById(postId, "fake", false)
         console.log("foundPost: ", foundPost)
         if (!foundPost) {
             res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
@@ -161,7 +195,8 @@ postRoute.get('/:postId/comments',
                 res.sendStatus(HTTP_STATUSES.NOT_FOUND_404)
                 return
             }
-            res.send(comments)
+            res.send(comments).status(200)
+
 
         }
 
@@ -173,7 +208,7 @@ postRoute.get('/:postId/comments',
             await jwtService.userfromToken(tokenWithoutBearer);
 
         const comments =
-            await CommentsQueryRepository.getCommentsForPostForAutorisedUser(
+            await CommentsQueryRepository.getCommentsForPostForAuthorizedUser(
                 req.params.postId,
                 userId,
                 pageNumber,

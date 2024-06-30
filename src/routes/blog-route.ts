@@ -73,10 +73,11 @@ blogRoute.post('/',
 
 // create post for specified blog
 blogRoute.post('/:blogId/posts',
+ //   authMiddleware,
     authMiddleware,
     blogValidationPostToBlog(),
     async (req: Request, res: Response) => {
-
+        console.log("in the middleware")
         //check if blogId exist
         try {
             const checkBlog
@@ -98,6 +99,7 @@ blogRoute.post('/:blogId/posts',
         const newPost =
             await PostsService.createPost(post)
         if (!newPost) return res.sendStatus(404);
+
 
         return res.status(HTTP_STATUSES.CREATED_201).send(postToBlogMapper(newPost))
     }

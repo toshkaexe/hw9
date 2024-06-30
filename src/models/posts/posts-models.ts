@@ -85,7 +85,11 @@ export const postMapper =
                 likesCount: post.extendedLikesInfo.likesCount,
                 dislikesCount: post.extendedLikesInfo.dislikesCount,
                 myStatus: post.extendedLikesInfo.myStatus,
-                newestLikes: []
+                newestLikes: post.extendedLikesInfo.newestLikes.map(like => ({
+                    addedAt: like.addedAt,
+                    userId: like.userId,
+                    login: like.login
+                }))
             }
         }
     }

@@ -1,5 +1,5 @@
 import {WithId} from "mongodb";
-import {CreatePostModel} from "../posts/posts-models";
+import {CreatePostModel, ExtendedLikesInfo} from "../posts/posts-models";
 
 export type BlogDbModel = {
     name: string
@@ -68,7 +68,8 @@ export type PostViewModel = {
     content: string,
     blogId: string,
     blogName: string,
-    createdAt: string
+    createdAt: string,
+    extendedLikesInfo: ExtendedLikesInfo
 }
 export const postToBlogMapper = (blog: WithId<CreatePostModel>): PostViewModel=> {
     return {
@@ -78,6 +79,16 @@ export const postToBlogMapper = (blog: WithId<CreatePostModel>): PostViewModel=>
         content: blog.content,
         blogId: blog.blogId,
         blogName: blog.blogName,
-        createdAt: blog.createdAt
+        createdAt: blog.createdAt,
+        extendedLikesInfo: {
+            likesCount: blog.extendedLikesInfo.likesCount,
+            dislikesCount: blog.extendedLikesInfo.dislikesCount,
+            myStatus: blog.extendedLikesInfo.myStatus,
+            newestLikes: blog.extendedLikesInfo.newestLikes.map(like => ({
+                addedAt: like.addedAt,
+                userId: like.userId,
+                login: like.login
+            }))
+        }
     }
 }

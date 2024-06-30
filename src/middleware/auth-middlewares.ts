@@ -15,8 +15,10 @@ dotenv.config()
 export const authMiddleware = (req: Request,
                                res: Response,
                                next: NextFunction) => {
+    console.log("Hallo from middleware")
 
     const auth = req.headers['authorization']
+    console.log("auth=",auth)
     if (!auth) {
 
         res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
@@ -32,6 +34,9 @@ export const authMiddleware = (req: Request,
     const decodedData = Buffer.from(token, 'base64').toString()
     //admin:qwerty
     const [login, password] = decodedData.split(":")
+
+    console.log("login=", login)
+    console.log("password=",password)
     if (login !== process.env.AUTH_LOGIN || password !== process.env.AUTH_PASSWORD) {
         console.log("working!!")
         res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
