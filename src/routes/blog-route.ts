@@ -15,7 +15,9 @@ import {BlogsQueryRepository} from "../repositories/blogs-query-repository";
 import {PostsService} from "../domain/posts-service";
 
 import {BlogMongoModel} from "../db/schemas";
-import {CreatePostInputModel, postMapper} from "../models/posts/posts-models";
+import {CreatePostInputModel, OutputPostModel, postMapper} from "../models/posts/posts-models";
+import {PostsQueryRepository} from "../repositories/posts-query-repository";
+import {jwtService} from "../domain/jwt-service";
 
 
 export const blogRoute = Router({})
@@ -53,12 +55,71 @@ blogRoute.get('/:blogId/posts',
         }
         const {pageNumber, pageSize, sortBy, sortDirection} = getPageOptions(req.query);
 
-        const posts = await BlogsQueryRepository.getPostsToBlog(req.params.blogId, pageNumber, pageSize, sortBy, sortDirection)
+        const token = req.headers['authorization']
+
+        if (!token) {
+
+
+            const posts =
+                await BlogsQueryRepository
+                    .getPostsToBlog(
+                        req.params.blogId,
+                        pageNumber,
+                        pageSize,
+                        sortBy,
+                        sortDirection)
+            if (!posts) {
+                res.sendStatus(404)
+                return
+            }
+            res.status(200).send(posts)
+            return
+        }
+
+
+        const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
+        console.log("token1: ", token1)
+        const userId = await jwtService.userfromToken(token1);
+        console.log("usr=====", userId)
+        if (!userId) {
+
+
+            const posts =
+                await BlogsQueryRepository
+                    .getPostsToBlog(
+                        req.params.blogId,
+                        pageNumber,
+                        pageSize,
+                        sortBy,
+                        sortDirection)
+            if (!posts) {
+                res.sendStatus(404)
+                return
+            }
+            res.status(200).send(posts)
+            return
+        }
+        console.log("userId=", userId)
+
+
+
+
+        const posts =
+            await BlogsQueryRepository
+                .getPostsToBlog2(
+                    req.params.blogId,
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    sortDirection,
+                    userId)
         if (!posts) {
             res.sendStatus(404)
             return
         }
         res.status(200).send(posts)
+        return
+
     })
 
 
@@ -77,7 +138,7 @@ blogRoute.post('/:blogId/posts',
     authMiddleware,
     blogValidationPostToBlog(),
     async (req: Request, res: Response) => {
-        console.log("in the middleware")
+
         //check if blogId exist
         try {
             const checkBlog
