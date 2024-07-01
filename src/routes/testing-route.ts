@@ -12,7 +12,7 @@ import {
     PostMongoModel,
     BlacklistTokensMongoModel,
     UserMongoModel,
-    HelpLikesInfoMongoModel
+    HelpLikesInfoMongoModel, LikeToPostModel
 } from "../db/schemas";
 
 export const testingRoute = Router({})
@@ -34,6 +34,8 @@ testingRoute.delete('/all-data', async (req: Request, res: Response) => {
     await ApiRequestMongoModel.deleteMany({});
 
     await HelpLikesInfoMongoModel.deleteMany({});
+
+    await LikeToPostModel.deleteMany({});
 
     //await database.dropDatabase();
 

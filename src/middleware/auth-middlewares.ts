@@ -8,6 +8,7 @@ import {UserViewModel} from "../models/users/users-models";
 import {SessionRepository} from "../repositories/session-repository";
 import {DeviceMongoModel, UserMongoModel} from "../db/schemas";
 import {log} from "util";
+import {appConfig} from "../settings";
 
 
 dotenv.config()
@@ -37,7 +38,7 @@ export const authMiddleware = (req: Request,
 
     console.log("login=", login)
     console.log("password=",password)
-    if (login !== process.env.AUTH_LOGIN || password !== process.env.AUTH_PASSWORD) {
+    if (login !==appConfig.ADMIN_LOGIN|| password !== appConfig.ADMIN_PASSWORD) {
         console.log("working!!")
         res.sendStatus(HTTP_STATUSES.NOT_AUTHORIZED_401)
         return

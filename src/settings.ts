@@ -22,8 +22,8 @@ export const appConfig = {
     MONGO_URI: process.env.MONGO_URI_CLOUD,
     DB_NAME: process.env.DB_NAME,
 
-    ADMIN_LOGIN: "admin",
-    ADMIN_PASS: "qwerty"
+    ADMIN_LOGIN: 'admin',
+    ADMIN_PASSWORD: 'qwerty'
     }
 
 export const RoutesList = {

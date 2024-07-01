@@ -46,18 +46,21 @@ postRoute.get('/', async (req: Request, res: Response) => {
     const token1 = token.split(' ')[1]  //bearer fasdfasdfasdf
     console.log("token1: ", token1)
     const userId = await jwtService.userfromToken(token1);
-    if (!userId) {
 
+    console.log("userId=", userId)
+    if (!userId) {
+        console.log("in if")
         const foundPosts =
-            await PostsQueryRepository.findPostsForAuthorizedUser(pageNumber, pageSize, sortBy, sortDirection, userId)
+            await    await PostsQueryRepository.findPostsForUnauthorizedUser(pageNumber, pageSize, sortBy, sortDirection)
         res.send(foundPosts)
         return
 
     }
 
-    //для неавторизованного
-
-
+    const foundPosts =
+        await PostsQueryRepository.findPostsForAuthorizedUser(pageNumber, pageSize, sortBy, sortDirection, userId)
+    res.send(foundPosts)
+    return
 })
 
 postRoute.post('/',
